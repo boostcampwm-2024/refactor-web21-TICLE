@@ -207,28 +207,24 @@
 <table width="100%">
 <tr>
     <td width="20%" align="center"><b>지석호</b></td>
-    <td width="20%" align="center"><b>심은서</b></td>
     <td width="20%" align="center"><b>노종빈</b></td>
     <td width="20%" align="center"><b>이지은</b></td>
     <td width="20%" align="center"><b>황성하</b></td>
 </tr>
 <tr>
     <td align="center"><img src="https://avatars.githubusercontent.com/u/60173534?v=4" width="100" height="100" /></td>
-    <td align="center"><img src="https://avatars.githubusercontent.com/u/55528304?v=4" width="100" height="100" /></td>
     <td align="center"><img src="https://avatars.githubusercontent.com/u/95959567?v=4" width="100" height="100" /></td>
     <td align="center"><img src="https://avatars.githubusercontent.com/u/112913242?v=4" width="100" height="100" /></td>
     <td align="center"><img src="https://avatars.githubusercontent.com/u/58902013?v=4" width="100" height="100" /></td>
 </tr>
 <tr>
     <td align="center"><a href="https://github.com/seoko97">@seoko97</a></td>
-    <td align="center"><a href="https://github.com/simeunseo">@simeunseo</a></td>
     <td align="center"><a href="https://github.com/begong313">@begong313</a></td>
     <td align="center"><a href="https://github.com/Jieun1ee">@Jieun1ee</a></td>
     <td align="center"><a href="https://github.com/Fixtar">@Fixtar</a></td>
 </tr>
 <tr>
     <td align="center">Web FE·BE</td>
-    <td align="center">Web FE</td>
     <td align="center">Web BE</td>
     <td align="center">Web BE</td>
     <td align="center">Web BE</td>
