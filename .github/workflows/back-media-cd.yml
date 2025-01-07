@@ -71,7 +71,7 @@ jobs:
           push: true
           tags: ${{secrets.DOCKER_REGISTRY_URL}}/media:${{ github.sha }},${{secrets.DOCKER_REGISTRY_URL}}/media:latest
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=min
 
   deploy-test:
     needs: build
@@ -99,7 +99,6 @@ jobs:
           sleep 10  # 컨테이너가 시작될 시간을 주기 위한 대기 시간
           docker ps -a
           docker logs media  # 로그 확인
-          echo "캐싱 적용 확인"
 
   # deploy:
   #   needs: build
