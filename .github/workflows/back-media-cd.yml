@@ -2,7 +2,7 @@ name: 백엔드 @app/media CD
 
 on:
   push:
-    branches: [main, release, feat/#1/media-build]
+    branches: [main, release]
 
 jobs:
   ci:
@@ -76,7 +76,7 @@ jobs:
   deploy-test:
     needs: build
     name: Deploy media
-    runs-on: ubuntu-latest
+    runs-on: [ticle-main]
 
     steps:
       - name: 🐳 Docker 로그인
@@ -90,42 +90,15 @@ jobs:
         run: |
           docker pull ${{secrets.DOCKER_REGISTRY_URL}}/media:${{ github.sha }}
 
+      - name: 🐳 Docker 기존 컨테이너 종료
+        run: |
+          docker stop media || true
+          docker rm media || true
+
       - name: 🐳 media 컨테이너 실행
         run: |
           docker run -dit --name media -p 3002:3002 -p 30000-30500:30000-30500/tcp -p 30000-30500:30000-30500/udp ${{secrets.DOCKER_REGISTRY_URL}}/media:${{ github.sha }}
 
-      - name: 🐳 Docker 상태 확인
+      - name: 🐳 사용하지 않는 Docker 이미지 제거
         run: |
-          sleep 10  # 컨테이너가 시작될 시간을 주기 위한 대기 시간
-          docker ps -a
-          docker logs media  # 로그 확인
-
-  # deploy:
-  #   needs: build
-  #   name: Deploy media
-  #   runs-on: [ticle-main]
-
-  #   steps:
-  #     - name: 🐳 Docker 로그인
-  #       uses: docker/login-action@v3
-  #       with:
-  #         registry: ${{secrets.DOCKER_REGISTRY_URL}}
-  #         username: ${{secrets.DOCKER_REGISTRY_ACCESS_KEY}}
-  #         password: ${{secrets.DOCKER_REGISTRY_SECRET_KEY}}
-
-  #     - name: 🐳 Docker 이미지 다운로드
-  #       run: |
-  #         docker pull ${{secrets.DOCKER_REGISTRY_URL}}/media:${{ github.sha }}
-
-  #     - name: 🐳 Docker 기존 컨테이너 종료
-  #       run: |
-  #         docker stop media || true
-  #         docker rm media || true
-
-  #     - name: 🐳 media 컨테이너 실행
-  #       run: |
-  #         docker run -dit --name media -p 3002:3002 -p 30000-30500:30000-30500/tcp -p 30000-30500:30000-30500/udp ${{secrets.DOCKER_REGISTRY_URL}}/media:${{ github.sha }}
-
-  #     - name: 🐳 사용하지 않는 Docker 이미지 제거
-  #       run: |
-  #         docker image prune --all --force
+          docker image prune --all --force
