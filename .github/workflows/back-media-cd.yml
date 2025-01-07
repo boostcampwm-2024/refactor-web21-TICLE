@@ -94,7 +94,7 @@ jobs:
         run: |
           docker run -dit --name media -p 3002:3002 -p 30000-30500:30000-30500/tcp -p 30000-30500:30000-30500/udp ${{secrets.DOCKER_REGISTRY_URL}}/media:${{ github.sha }}
 
-       - name: 🐳 Docker 상태 확인
+      - name: 🐳 Docker 상태 확인
         run: |
           sleep 10  # 컨테이너가 시작될 시간을 주기 위한 대기 시간
           docker ps -a
