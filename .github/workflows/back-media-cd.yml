@@ -73,9 +73,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: 🐳 Docker 빌드 및 푸시
-        run: docker buildx build -f apps/media/Dockerfile . -t ${{secrets.DOCKER_REGISTRY_URL}}/media:${{ github.sha }} -t ${{secrets.DOCKER_REGISTRY_URL}}/media:latest --push
-
   deploy-test:
     needs: build
     name: Deploy media
