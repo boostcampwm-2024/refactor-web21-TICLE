@@ -5,14 +5,6 @@ import { SortType } from '../sortType.enum';
 
 export class GetTicleListQueryDto {
   @ApiProperty({
-    example: 1,
-    description: '페이지 번호',
-    default: 1,
-    required: false,
-  })
-  page?: number = 1;
-
-  @ApiProperty({
     example: 10,
     description: '페이지당 항목 수',
     default: 10,
