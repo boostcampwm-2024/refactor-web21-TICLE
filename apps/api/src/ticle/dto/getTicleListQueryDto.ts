@@ -37,4 +37,11 @@ export class GetTicleListQueryDto {
     required: false,
   })
   sort?: SortType = SortType.NEWEST;
+
+  @ApiProperty({
+    example: '2025-01-14T12:00:00Z',
+    description: 'lastCreatedAt',
+    required: false,
+  })
+  lastSeenCreatedAt?: Date;
 }
