@@ -19,6 +19,7 @@ import { Tag } from './tag.entity';
 import { User } from './user.entity';
 
 @Entity('ticle')
+@Index('idx_id_created_at', ['id', 'created_at'])
 @Index('idx_fulltext_search', ['title', 'content'], { fulltext: true })
 export class Ticle {
   @PrimaryGeneratedColumn({ type: 'bigint' })
@@ -52,6 +53,7 @@ export class Ticle {
   @Column({ type: 'enum', enum: TicleStatus, default: TicleStatus.OPEN, name: 'ticle_status' })
   ticleStatus: TicleStatus;
 
+  @Index()
   @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
   createdAt: Date;
 
