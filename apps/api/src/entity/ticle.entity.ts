@@ -19,7 +19,7 @@ import { Tag } from './tag.entity';
 import { User } from './user.entity';
 
 @Entity('ticle')
-// @Index('idx_id_created_at', ['id', 'created_at'])
+@Index('idx_id_created_at', ['id', 'createdAt'])
 @Index('idx_fulltext_search', ['title', 'content'], { fulltext: true })
 export class Ticle {
   @PrimaryGeneratedColumn({ type: 'bigint' })
