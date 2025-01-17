@@ -28,10 +28,10 @@ export class TicleController {
   @Get('list')
   async getTicleList(@Query() query: GetTicleListQueryDto) {
     const parsedQuery = {
-      page: query.page ? Number(query.page) : 1,
       pageSize: query.pageSize ? Number(query.pageSize) : 10,
       isOpen: query.isOpen === undefined ? true : query.isOpen,
       sort: query.sort || SortType.NEWEST,
+      lastSeenCreatedAt: query.lastSeenCreatedAt ? query.lastSeenCreatedAt : null,
     };
     return this.ticleService.getTicleList(parsedQuery);
   }

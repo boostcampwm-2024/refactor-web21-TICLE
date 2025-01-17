@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 import { ErrorMessage, TicleStatus } from '@repo/types';
 
 import { Applicant } from '@/entity/applicant.entity';
@@ -23,7 +23,8 @@ export class TicleService {
     @InjectRepository(Applicant)
     private applicantRepository: Repository<Applicant>,
     @InjectRepository(User)
-    private userRepository: Repository<User>
+    private userRepository: Repository<User>,
+    private readonly entityManager: EntityManager
   ) {}
 
   async createTicle(createTicleDto: CreateTicleDto, userId: number): Promise<Ticle> {
@@ -165,43 +166,62 @@ export class TicleService {
   }
 
   async getTicleList(query: GetTicleListQueryDto) {
-    const { page, pageSize, isOpen, sort } = query;
-    const skip = (page - 1) * pageSize;
-    const queryBuilder = this.ticleRepository
-      .createQueryBuilder('ticle')
-      .select([
-        'ticle.id',
-        'ticle.title',
-        'ticle.startTime',
-        'ticle.endTime',
-        'ticle.speakerName',
-        'ticle.createdAt',
-        'ticle.profileImageUrl',
-      ])
-      .addSelect('GROUP_CONCAT(DISTINCT tags.name)', 'tagNames')
-      .addSelect('COUNT(DISTINCT applicant.id)', 'applicantCount')
-      .addSelect('speaker.profile_image_url')
-      .leftJoin('ticle.tags', 'tags')
-      .leftJoin('ticle.applicants', 'applicant')
-      .leftJoin('ticle.speaker', 'speaker')
-      .where('ticle.ticleStatus IN (:...statuses)', {
-        statuses: isOpen ? [TicleStatus.OPEN, TicleStatus.IN_PROGRESS] : [TicleStatus.CLOSED],
-      })
-      .groupBy('ticle.id');
+    const { pageSize, isOpen, sort, lastSeenCreatedAt } = query;
 
-    switch (sort) {
-      case SortType.OLDEST:
-        queryBuilder.orderBy('ticle.createdAt', 'ASC');
-        break;
-      case SortType.TRENDING:
-        queryBuilder.orderBy('applicantCount', 'DESC').addOrderBy('ticle.createdAt', 'DESC');
-        break;
-      case SortType.NEWEST:
-      default:
-        queryBuilder.orderBy('ticle.createdAt', 'DESC');
+    const isOldest = sort.toLowerCase() === SortType.OLDEST;
+    const orderDirection = isOldest ? 'ASC' : 'DESC';
+    const statuses = isOpen
+      ? `'${TicleStatus.OPEN}', '${TicleStatus.IN_PROGRESS}'`
+      : TicleStatus.CLOSED;
+
+    console.log(lastSeenCreatedAt);
+
+    const currentDate = new Date();
+    let cursor: Date;
+
+    if (!lastSeenCreatedAt) {
+      if (sort.toLowerCase() === SortType.NEWEST) {
+        cursor = currentDate;
+      } else {
+        cursor = new Date('2000-01-01T00:00:00Z');
+      }
+    } else {
+      cursor = new Date(lastSeenCreatedAt);
     }
 
-    const ticles = await queryBuilder.offset(skip).limit(pageSize).getRawMany();
+    cursor.setHours(cursor.getHours() + 9);
+    const formattedCursor = `${cursor.toISOString().slice(0, 19).replace('T', ' ')}.${String(cursor.getMilliseconds()).padStart(3, '0').padEnd(6, '0')}`;
+
+    const naturalQuery = `
+    SELECT 
+        limited_ticles.id AS ticle_id,
+        limited_ticles.speaker_name AS ticle_speaker_name,
+        limited_ticles.title AS ticle_title,
+        limited_ticles.start_time AS ticle_start_time,
+        limited_ticles.end_time AS ticle_end_time,
+        limited_ticles.created_at AS ticle_created_at,
+        limited_ticles.profile_image_url AS ticle_profile_image_url,
+        GROUP_CONCAT(DISTINCT tags.name) AS tagNames,
+        COUNT(DISTINCT applicant.id) AS applicantCount,
+        speaker.profile_image_url AS speaker_profile_image_url
+    FROM (
+        SELECT *
+        FROM ticle
+        WHERE ticle.ticle_status IN (${statuses})
+          AND ticle.created_at ${orderDirection === 'ASC' ? '>' : '<'} ?
+        ORDER BY ticle.created_at ${orderDirection}
+        LIMIT ?
+    ) AS limited_ticles
+    LEFT JOIN ticle_tag ticle_tags ON ticle_tags.ticle_id = limited_ticles.id
+    LEFT JOIN tag tags ON tags.id = ticle_tags.tag_id
+    LEFT JOIN applicant applicant ON applicant.ticle_id = limited_ticles.id
+    LEFT JOIN user speaker ON speaker.id = limited_ticles.speaker_id
+    GROUP BY limited_ticles.id
+    ORDER BY limited_ticles.created_at ${orderDirection};
+  `;
+
+    const result = await this.entityManager.query(naturalQuery, [formattedCursor, pageSize]);
+
     const countQuery = this.ticleRepository
       .createQueryBuilder('ticle')
       .select('COUNT(*) as count')
@@ -210,7 +230,9 @@ export class TicleService {
       });
     const totalTicleCount = await countQuery.getRawOne();
 
-    const formattedTicles = ticles.map((ticle) => ({
+    console.log(result);
+
+    const formattedTicles = result.map((ticle) => ({
       id: ticle.ticle_id,
       title: ticle.ticle_title,
       tags: ticle.tagNames ? ticle.tagNames.split(',') : [],
@@ -227,11 +249,10 @@ export class TicleService {
     return {
       ticles: formattedTicles,
       meta: {
-        page,
         take: pageSize,
         totalItems: totalTicleCount.count,
         totalPages,
-        hasNextPage: page < totalPages,
+        hasNextPage: formattedTicles.length === pageSize,
       },
     };
   }
