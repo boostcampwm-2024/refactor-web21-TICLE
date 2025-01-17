@@ -59,10 +59,21 @@ jobs:
           username: ${{secrets.DOCKER_REGISTRY_ACCESS_KEY}}
           password: ${{secrets.DOCKER_REGISTRY_SECRET_KEY}}
 
-      - name: 🐳 Docker 빌드 및 푸시
-        run: docker buildx build -f apps/media/Dockerfile . -t ${{secrets.DOCKER_REGISTRY_URL}}/media:${{ github.sha }} -t ${{secrets.DOCKER_REGISTRY_URL}}/media:latest --push
 
-  deploy:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🐳 Docker 빌드 및 푸시
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/media/Dockerfile
+          push: true
+          tags: ${{secrets.DOCKER_REGISTRY_URL}}/media:${{ github.sha }},${{secrets.DOCKER_REGISTRY_URL}}/media:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=min
+
+  deploy-test:
     needs: build
     name: Deploy media
     runs-on: [ticle-main]
