@@ -80,14 +80,6 @@ export class RecordService {
     return recordInfo;
   }
 
-  pauseRecord(roomId: string) {
-    //todo: ffmpeg process pause
-  }
-
-  resumeRecord(roomId: string) {
-    //todo: ffmpeg process resume
-  }
-
   stopRecord(roomId: string) {
     const recordInfo = this.recordInfos.get(roomId);
     if (!recordInfo) {
@@ -124,3 +116,9 @@ export class RecordService {
     return this.recordInfos.has(roomId);
   }
 }
+
+//todo : 방장 마이크 키기 전까지 ffmepg실행안되게하기
+//todo : 방장 마이크 키면 ffmpeg실행
+//todo : 새로운 사용자 입장 시 consumer 추가
+//todo : 사용자 나가기 시 consumer 삭제
+//todo :

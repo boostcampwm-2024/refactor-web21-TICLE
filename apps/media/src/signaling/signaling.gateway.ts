@@ -209,15 +209,6 @@ export class SignalingGateway implements OnGatewayDisconnect {
     this.recordService.stopRecord(roomId);
   }
 
-  @SubscribeMessage(SOCKET_EVENTS.pauseRecord)
-  pauseRecord(@MessageBody('roomId') roomId: string) {
-    this.recordService.pauseRecord(roomId);
-  }
-
-  @SubscribeMessage(SOCKET_EVENTS.resumeRecord)
-  resumeRecord(@MessageBody('roomId') roomId: string) {
-    this.recordService.resumeRecord(roomId);
-  }
   @SubscribeMessage(SOCKET_EVENTS.getIsRecording)
   getIsRecording(@MessageBody('roomId') roomId: string) {
     const isRecording = this.recordService.getIsRecording(roomId);
