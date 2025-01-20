@@ -6,9 +6,8 @@ import { types } from 'mediasoup';
 import { NcpService } from '@/ncp/ncp.service';
 
 export class RecordInfo {
-  socketId: string;
   plainTransport: types.PlainTransport;
-  recordConsumer: types.Consumer;
+  recordConsumers: Map<string, types.Consumer>;
 
   ncpService: NcpService;
 
@@ -16,9 +15,8 @@ export class RecordInfo {
 
   ffmpegProcess: FfmpegCommand;
 
-  constructor(port: number, socketId: string, ncpService: NcpService) {
+  constructor(port: number, ncpService: NcpService) {
     this.port = port;
-    this.socketId = socketId;
     this.ncpService = ncpService;
   }
 
@@ -27,26 +25,21 @@ export class RecordInfo {
   }
 
   setRecordConsumer(recordConsumer: types.Consumer, roomId: string) {
-    this.recordConsumer = recordConsumer;
-    this.recordConsumer.on('producerresume', () => {
-      if (!this.ffmpegProcess) {
-        this.createFfmpegProcess(roomId);
-      }
+    this.recordConsumers.set(recordConsumer.id, recordConsumer);
+    recordConsumer.on('producerresume', () => {
+      // todo : 실행중인지 판단하는 코드 추가한 뒤 전체에서 한번만 실행하게하기
+      // if (!this.ffmpegProcess) {
+      //   this.createFfmpegProcess(roomId);
+      // }
     });
   }
 
-  pauseRecordProcess() {
-    this.recordConsumer.pause();
-  }
-
-  resumeRecordProcess() {
-    this.recordConsumer.resume();
-  }
-
   clearStream() {
-    if (this.recordConsumer) {
-      this.recordConsumer.close();
-      this.recordConsumer = null;
+    if (this.recordConsumers) {
+      this.recordConsumers.forEach((consumer) => {
+        consumer.close();
+      });
+      this.recordConsumers.clear();
     }
     if (this.plainTransport) {
       this.plainTransport.close();
@@ -59,6 +52,7 @@ export class RecordInfo {
       return;
     }
 
+    // todo : 대표적인 음성 rtpparameter를 가져옴
     const rtpParameter = this.recordConsumer.rtpParameters;
     const sdpString = this.createSdpText(this.port, rtpParameter);
     const sdpFilePath = `./record/${roomId}_${Date.now()}.sdp`;

@@ -29,39 +29,34 @@ export class RecordService {
     }
   }
 
-  async startRecord(roomId: string, socketId: string) {
+  async startRecord(roomId: string) {
     const room = this.roomService.getRoom(roomId);
     if (!room) {
       return;
     }
     const router = room.router;
-    const peer = room.getPeer(socketId);
-    const audioProducer = peer.getAudioProducer();
-    if (!audioProducer) {
-      return;
-    }
+    // 방에있는 모든 audio producer 가져오기
+    const audioProducers = room.getAllAudioProducers();
 
     const port = this.getPort();
-    const recordInfo = this.setRecordInfo(roomId, port, socketId);
+    const recordInfo = this.setRecordInfo(roomId, port);
     const plainTransport = await this.addPlainTransport(recordInfo, router);
     plainTransport.connect({
       ip: '127.0.0.1',
       port,
     });
-    await this.addConsumer(
-      recordInfo,
-      router.rtpCapabilities,
-      audioProducer.id,
-      audioProducer.paused,
-      roomId
-    );
-    if (!audioProducer.paused) {
+
+    // 모든 consumer를 생성하게 하기
+    await this.addConsumer();
+
+    //todo : 방에있는 하나의 음성이라도 있으면 ffmpeg process 생성
+    if (!audioProducers) {
       recordInfo.createFfmpegProcess(roomId);
     }
   }
 
-  private setRecordInfo(roomId: string, port: number, socketId: string) {
-    const recordInfo = new RecordInfo(port, socketId, this.ncpService);
+  private setRecordInfo(roomId: string, port: number) {
+    const recordInfo = new RecordInfo(port, this.ncpService);
     this.recordInfos.set(roomId, recordInfo);
     return recordInfo;
   }
@@ -72,39 +67,14 @@ export class RecordService {
     return plainTransport;
   }
 
-  private async addConsumer(
-    recordInfo: RecordInfo,
-    rtpCapabilities: types.RtpCapabilities,
-    producerId: string,
-    producerPaused: boolean,
-    roomId: string
-  ) {
-    const plainTransport = recordInfo.plainTransport;
-    const consumer = await this.mediasoupService.createRecordConsumer(
-      plainTransport,
-      producerId,
-      rtpCapabilities,
-      producerPaused
-    );
-
-    recordInfo.setRecordConsumer(consumer, roomId);
-    return consumer;
-  }
+  private async addConsumer() {}
 
   pauseRecord(roomId: string) {
-    const recordInfo = this.recordInfos.get(roomId);
-    if (!recordInfo) {
-      return;
-    }
-    recordInfo.pauseRecordProcess();
+    //todo: ffmpeg process pause
   }
 
   resumeRecord(roomId: string) {
-    const recordInfo = this.recordInfos.get(roomId);
-    if (!recordInfo) {
-      return;
-    }
-    recordInfo.resumeRecordProcess();
+    //todo: ffmpeg process resume
   }
 
   stopRecord(roomId: string) {

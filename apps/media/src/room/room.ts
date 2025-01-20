@@ -55,6 +55,8 @@ export class Room {
     return false;
   }
 
+  getAllAudioProducers() {}
+
   close() {
     this.peers.forEach((peer) => peer.close());
     this.peers.clear();
