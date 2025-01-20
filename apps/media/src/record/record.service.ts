@@ -3,7 +3,7 @@ import fs from 'fs';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WsException } from '@nestjs/websockets';
-import { types } from 'mediasoup';
+import { PlainTransport, Producer, RtpCapabilities } from 'mediasoup/node/lib/types';
 import { ErrorMessage } from '@repo/types';
 
 import { MediasoupService } from '@/mediasoup/mediasoup.service';
@@ -35,19 +35,23 @@ export class RecordService {
       return;
     }
     const router = room.router;
-    // 방에있는 모든 audio producer 가져오기
-    const audioProducers = room.getAllAudioProducers();
-
     const port = this.getPort();
-    const recordInfo = this.setRecordInfo(roomId, port);
-    const plainTransport = await this.addPlainTransport(recordInfo, router);
+
+    const plainTransport = await this.mediasoupService.createPlainTransport(router);
     plainTransport.connect({
       ip: '127.0.0.1',
       port,
     });
 
-    // 모든 consumer를 생성하게 하기
-    await this.addConsumer();
+    const audioProducers = room.getAllAudioProducers();
+
+    const recordInfo = this.createRecordInfo(
+      port,
+      plainTransport,
+      audioProducers,
+      router.rtpCapabilities
+    );
+    this.recordInfos.set(roomId, recordInfo);
 
     //todo : 방에있는 하나의 음성이라도 있으면 ffmpeg process 생성
     if (!audioProducers) {
@@ -55,19 +59,26 @@ export class RecordService {
     }
   }
 
-  private setRecordInfo(roomId: string, port: number) {
+  private createRecordInfo(
+    port: number,
+    plainTransport: PlainTransport,
+    audioProducers: Producer[],
+    rtpCapabilities: RtpCapabilities
+  ) {
     const recordInfo = new RecordInfo(port, this.ncpService);
-    this.recordInfos.set(roomId, recordInfo);
+    recordInfo.setPlainTransport(plainTransport);
+    audioProducers.forEach(async (producer) => {
+      const consumer = await this.mediasoupService.createRecordConsumer(
+        plainTransport,
+        producer.id,
+        rtpCapabilities,
+        producer.paused
+      );
+      recordInfo.addRecordConsumer(consumer);
+    });
+
     return recordInfo;
   }
-
-  private async addPlainTransport(recordInfo: RecordInfo, router: types.Router) {
-    const plainTransport = await this.mediasoupService.createPlainTransport(router);
-    recordInfo.setPlainTransport(plainTransport);
-    return plainTransport;
-  }
-
-  private async addConsumer() {}
 
   pauseRecord(roomId: string) {
     //todo: ffmpeg process pause

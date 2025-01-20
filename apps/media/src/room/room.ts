@@ -1,5 +1,5 @@
 import { WsException } from '@nestjs/websockets';
-import { Router } from 'mediasoup/node/lib/RouterTypes';
+import { Producer, Router } from 'mediasoup/node/lib/types';
 import { ErrorMessage } from '@repo/types';
 
 import { Peer } from './peer';
@@ -55,7 +55,14 @@ export class Room {
     return false;
   }
 
-  getAllAudioProducers() {}
+  getAllAudioProducers(): Producer[] {
+    const audioProducers = [];
+    this.peers.forEach((peer) => {
+      const producer = peer.getAudioProducer();
+      if (producer) audioProducers.push(producer);
+    });
+    return audioProducers;
+  }
 
   close() {
     this.peers.forEach((peer) => peer.close());

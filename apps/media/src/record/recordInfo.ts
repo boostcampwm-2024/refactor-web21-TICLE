@@ -1,13 +1,13 @@
 import { unlinkSync, writeFileSync } from 'fs';
 
 import ffmpeg, { FfmpegCommand } from 'fluent-ffmpeg';
-import { types } from 'mediasoup';
+import { Consumer, PlainTransport, RtpParameters } from 'mediasoup/node/lib/types';
 
 import { NcpService } from '@/ncp/ncp.service';
 
 export class RecordInfo {
-  plainTransport: types.PlainTransport;
-  recordConsumers: Map<string, types.Consumer>;
+  plainTransport: PlainTransport;
+  recordConsumers: Map<string, Consumer>;
 
   ncpService: NcpService;
 
@@ -18,15 +18,16 @@ export class RecordInfo {
   constructor(port: number, ncpService: NcpService) {
     this.port = port;
     this.ncpService = ncpService;
+    this.recordConsumers = new Map();
   }
 
-  setPlainTransport(plainTransport: types.PlainTransport) {
+  setPlainTransport(plainTransport: PlainTransport) {
     this.plainTransport = plainTransport;
   }
 
-  setRecordConsumer(recordConsumer: types.Consumer, roomId: string) {
+  addRecordConsumer(recordConsumer: Consumer) {
     this.recordConsumers.set(recordConsumer.id, recordConsumer);
-    recordConsumer.on('producerresume', () => {
+    recordConsumer.once('producerresume', () => {
       // todo : 실행중인지 판단하는 코드 추가한 뒤 전체에서 한번만 실행하게하기
       // if (!this.ffmpegProcess) {
       //   this.createFfmpegProcess(roomId);
@@ -85,7 +86,7 @@ export class RecordInfo {
     this.ffmpegProcess = ffmpegCommand;
   }
 
-  private createSdpText = (port: number, rtpParameters: types.RtpParameters) => {
+  private createSdpText = (port: number, rtpParameters: RtpParameters) => {
     const { codecs } = rtpParameters;
     const payloadType = codecs[0].payloadType;
     return `v=0
