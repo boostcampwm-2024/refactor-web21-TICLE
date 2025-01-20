@@ -3,7 +3,6 @@ import fs from 'fs';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WsException } from '@nestjs/websockets';
-import { PlainTransport, Producer, RtpCapabilities } from 'mediasoup/node/lib/types';
 import { ErrorMessage } from '@repo/types';
 
 import { MediasoupService } from '@/mediasoup/mediasoup.service';
@@ -43,41 +42,33 @@ export class RecordService {
       port,
     });
 
+    const masterPeer = room.getPeer(room.masterSocketId);
+    const masterPeerAudioProducer = masterPeer.getAudioProducer();
     const audioProducers = room.getAllAudioProducers();
 
-    const recordInfo = this.createRecordInfo(
-      port,
-      plainTransport,
-      audioProducers,
-      router.rtpCapabilities
-    );
+    const recordInfo = new RecordInfo(port, this.ncpService, plainTransport);
     this.recordInfos.set(roomId, recordInfo);
 
-    //todo : 방에있는 하나의 음성이라도 있으면 ffmpeg process 생성
-    if (!audioProducers) {
-      recordInfo.createFfmpegProcess(roomId);
-    }
-  }
-
-  private createRecordInfo(
-    port: number,
-    plainTransport: PlainTransport,
-    audioProducers: Producer[],
-    rtpCapabilities: RtpCapabilities
-  ) {
-    const recordInfo = new RecordInfo(port, this.ncpService);
-    recordInfo.setPlainTransport(plainTransport);
     audioProducers.forEach(async (producer) => {
       const consumer = await this.mediasoupService.createRecordConsumer(
         plainTransport,
         producer.id,
-        rtpCapabilities,
+        router.rtpCapabilities,
         producer.paused
       );
+      if (producer.id === masterPeerAudioProducer.id) {
+        recordInfo.setMasterConsumerRtpParameters(consumer.rtpParameters);
+        if (producer.paused) {
+          consumer.once('producerresume', () => {
+            recordInfo.createFfmpegProcess(roomId);
+            console.log('master consumer resume');
+          });
+          return;
+        }
+        recordInfo.createFfmpegProcess(roomId);
+      }
       recordInfo.addRecordConsumer(consumer);
     });
-
-    return recordInfo;
   }
 
   stopRecord(roomId: string) {
@@ -117,8 +108,5 @@ export class RecordService {
   }
 }
 
-//todo : 방장 마이크 키기 전까지 ffmepg실행안되게하기
-//todo : 방장 마이크 키면 ffmpeg실행
 //todo : 새로운 사용자 입장 시 consumer 추가
 //todo : 사용자 나가기 시 consumer 삭제
-//todo :

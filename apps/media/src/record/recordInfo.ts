@@ -8,33 +8,29 @@ import { NcpService } from '@/ncp/ncp.service';
 export class RecordInfo {
   plainTransport: PlainTransport;
   recordConsumers: Map<string, Consumer>;
+  masterConsumerRtpParameters: RtpParameters;
+  port: number;
 
   ncpService: NcpService;
 
-  port: number;
-
   ffmpegProcess: FfmpegCommand;
 
-  constructor(port: number, ncpService: NcpService) {
+  constructor(port: number, ncpService: NcpService, plainTransport: PlainTransport) {
     this.port = port;
     this.ncpService = ncpService;
     this.recordConsumers = new Map();
-  }
-
-  setPlainTransport(plainTransport: PlainTransport) {
     this.plainTransport = plainTransport;
   }
 
   addRecordConsumer(recordConsumer: Consumer) {
-    this.recordConsumers.set(recordConsumer.id, recordConsumer);
-    recordConsumer.once('producerresume', () => {
-      // todo : 실행중인지 판단하는 코드 추가한 뒤 전체에서 한번만 실행하게하기
-      // if (!this.ffmpegProcess) {
-      //   this.createFfmpegProcess(roomId);
-      // }
+    recordConsumer.on('producerclose', () => {
+      this.recordConsumers.delete(recordConsumer.id);
     });
+    this.recordConsumers.set(recordConsumer.id, recordConsumer);
   }
-
+  setMasterConsumerRtpParameters(rtpParameters: RtpParameters) {
+    this.masterConsumerRtpParameters = rtpParameters;
+  }
   clearStream() {
     if (this.recordConsumers) {
       this.recordConsumers.forEach((consumer) => {
@@ -54,8 +50,7 @@ export class RecordInfo {
     }
 
     // todo : 대표적인 음성 rtpparameter를 가져옴
-    const rtpParameter = this.recordConsumer.rtpParameters;
-    const sdpString = this.createSdpText(this.port, rtpParameter);
+    const sdpString = this.createSdpText();
     const sdpFilePath = `./record/${roomId}_${Date.now()}.sdp`;
     writeFileSync(sdpFilePath, sdpString);
 
@@ -86,15 +81,15 @@ export class RecordInfo {
     this.ffmpegProcess = ffmpegCommand;
   }
 
-  private createSdpText = (port: number, rtpParameters: RtpParameters) => {
-    const { codecs } = rtpParameters;
+  private createSdpText = () => {
+    const { codecs } = this.masterConsumerRtpParameters;
     const payloadType = codecs[0].payloadType;
     return `v=0
 o=- 0 0 IN IP4 127.0.0.1
 s=FFmpeg
 c=IN IP4 127.0.0.1
 t=0 0
-m=audio ${port} RTP/AVP ${payloadType}
+m=audio ${this.port} RTP/AVP ${payloadType}
 a=rtpmap:${payloadType} opus/48000/2
 a=fmtp:${payloadType} minptime=10;useinbandfec=1
 a=sendrecv
