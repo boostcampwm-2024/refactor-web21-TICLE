@@ -1,7 +1,7 @@
 import { unlinkSync, writeFileSync } from 'fs';
 
 import ffmpeg, { FfmpegCommand } from 'fluent-ffmpeg';
-import { Consumer, PlainTransport, RtpParameters } from 'mediasoup/node/lib/types';
+import { Consumer, PlainTransport, RtpCapabilities, RtpParameters } from 'mediasoup/node/lib/types';
 
 import { NcpService } from '@/ncp/ncp.service';
 
@@ -9,17 +9,24 @@ export class RecordInfo {
   plainTransport: PlainTransport;
   recordConsumers: Map<string, Consumer>;
   masterConsumerRtpParameters: RtpParameters;
+  rtpCapabilities: RtpCapabilities;
   port: number;
 
   ncpService: NcpService;
 
   ffmpegProcess: FfmpegCommand;
 
-  constructor(port: number, ncpService: NcpService, plainTransport: PlainTransport) {
+  constructor(
+    port: number,
+    ncpService: NcpService,
+    plainTransport: PlainTransport,
+    rtpCapabilities: RtpCapabilities
+  ) {
     this.port = port;
     this.ncpService = ncpService;
     this.recordConsumers = new Map();
     this.plainTransport = plainTransport;
+    this.rtpCapabilities = rtpCapabilities;
   }
 
   addRecordConsumer(recordConsumer: Consumer) {
@@ -49,7 +56,6 @@ export class RecordInfo {
       return;
     }
 
-    // todo : 대표적인 음성 rtpparameter를 가져옴
     const sdpString = this.createSdpText();
     const sdpFilePath = `./record/${roomId}_${Date.now()}.sdp`;
     writeFileSync(sdpFilePath, sdpString);

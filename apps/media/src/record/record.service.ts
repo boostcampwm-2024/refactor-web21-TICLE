@@ -46,29 +46,49 @@ export class RecordService {
     const masterPeerAudioProducer = masterPeer.getAudioProducer();
     const audioProducers = room.getAllAudioProducers();
 
-    const recordInfo = new RecordInfo(port, this.ncpService, plainTransport);
+    const recordInfo = new RecordInfo(
+      port,
+      this.ncpService,
+      plainTransport,
+      router.rtpCapabilities
+    );
     this.recordInfos.set(roomId, recordInfo);
 
     audioProducers.forEach(async (producer) => {
       const consumer = await this.mediasoupService.createRecordConsumer(
         plainTransport,
         producer.id,
-        router.rtpCapabilities,
+        recordInfo.rtpCapabilities,
         producer.paused
       );
+      recordInfo.addRecordConsumer(consumer);
+
       if (producer.id === masterPeerAudioProducer.id) {
         recordInfo.setMasterConsumerRtpParameters(consumer.rtpParameters);
         if (producer.paused) {
           consumer.once('producerresume', () => {
             recordInfo.createFfmpegProcess(roomId);
-            console.log('master consumer resume');
           });
           return;
         }
         recordInfo.createFfmpegProcess(roomId);
       }
-      recordInfo.addRecordConsumer(consumer);
     });
+  }
+
+  async addNewRecordConsumer(roomId: string, producerId: string, producerPaused: boolean) {
+    const recordInfo = this.recordInfos.get(roomId);
+    if (!recordInfo) {
+      return;
+    }
+    const plainTransport = recordInfo.plainTransport;
+    const consumer = await this.mediasoupService.createRecordConsumer(
+      plainTransport,
+      producerId,
+      recordInfo.rtpCapabilities,
+      producerPaused
+    );
+    recordInfo.addRecordConsumer(consumer);
   }
 
   stopRecord(roomId: string) {
@@ -107,6 +127,3 @@ export class RecordService {
     return this.recordInfos.has(roomId);
   }
 }
-
-//todo : 새로운 사용자 입장 시 consumer 추가
-//todo : 사용자 나가기 시 consumer 삭제

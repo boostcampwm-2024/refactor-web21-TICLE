@@ -89,9 +89,10 @@ export class SignalingGateway implements OnGatewayDisconnect {
       appData,
       paused: producerData.paused,
     };
-
+    if (kind === 'audio') {
+      this.recordService.addNewRecordConsumer(roomId, producerData.producerId, producerData.paused);
+    }
     client.to(roomId).emit(SOCKET_EVENTS.newProducer, createProducerRes);
-
     return createProducerRes;
   }
 
