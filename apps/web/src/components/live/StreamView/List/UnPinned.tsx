@@ -1,4 +1,4 @@
-import { client } from '@repo/mediasoup';
+import { RemoteStream } from '@repo/mediasoup/client';
 
 import PaginationControls from '@/components/live/StreamView/List/PaginationControls';
 import VideoGrid from '@/components/live/StreamView/List/VideoGrid';
@@ -8,8 +8,8 @@ import usePagination from '@/hooks/usePagination';
 const ITEMS_PER_GRID = 9;
 
 interface UnPinnedListProps {
-  addPinnedVideo: (stream: client.RemoteStream) => void;
-  getAudioMutedState: (stream: client.RemoteStream) => boolean;
+  addPinnedVideo: (stream: RemoteStream) => void;
+  getAudioMutedState: (stream: RemoteStream) => boolean;
 }
 
 function UnPinnedGrid({ addPinnedVideo, getAudioMutedState }: UnPinnedListProps) {

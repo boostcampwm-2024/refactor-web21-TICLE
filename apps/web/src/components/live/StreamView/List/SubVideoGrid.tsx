@@ -1,6 +1,6 @@
 import { cva } from 'class-variance-authority';
 import { useEffect, useRef, useState } from 'react';
-import { client } from '@repo/mediasoup';
+import { RemoteStream } from '@repo/mediasoup/client';
 
 import VideoPlayer from '@/components/live/StreamView/List/VideoPlayer';
 
@@ -17,10 +17,10 @@ const highlightVariants = cva(`h-full w-full overflow-hidden rounded-lg border-2
 });
 
 interface SubVideoGridProps {
-  videoStreamData: client.RemoteStream[];
-  pinnedVideoStreamData: client.RemoteStream | null;
-  onVideoClick: (stream: client.RemoteStream) => void;
-  getAudioMutedState: (stream: client.RemoteStream) => boolean;
+  videoStreamData: RemoteStream[];
+  pinnedVideoStreamData: RemoteStream | null;
+  onVideoClick: (stream: RemoteStream) => void;
+  getAudioMutedState: (stream: RemoteStream) => boolean;
 }
 
 function SubVideoGrid({
@@ -65,7 +65,7 @@ function SubVideoGrid({
             nickname={streamData.nickname}
             stream={streamData.stream ?? null}
             isMicOn={streamData && getAudioMutedState(streamData)}
-            mediaType={streamData.consumer?.appData?.mediaTypes ?? streamData.mediaType}
+            mediaType={streamData.consumer?.appData?.mediaType ?? streamData.mediaType}
           />
         </div>
       ))}

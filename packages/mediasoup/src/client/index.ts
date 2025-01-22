@@ -1,35 +1,38 @@
-import { ProducerOptions } from 'mediasoup-client/lib/types';
+import { MediaType } from '../types';
 
-import { MediaTypes } from '../types';
+import type {
+  Consumer,
+  DtlsParameters,
+  IceCandidate,
+  IceParameters,
+  MediaKind,
+  ProducerOptions,
+  RtpParameters,
+  Transport,
+} from 'mediasoup-client/lib/types';
 
-import type { types } from 'mediasoup-client';
-
-export type Device = types.Device;
-
-export type BaseTransport = types.Transport;
-
-export type RtpCapabilities = types.RtpCapabilities;
+export type BaseTransport = Transport;
 
 export interface ConsumerTransports {
-  consumer: types.Consumer;
+  consumer: Consumer;
   producerId: string;
   consumerTransport: BaseTransport;
   consumerTransportId: BaseTransport;
 }
 export interface CreateProducerRes {
-  kind: types.MediaKind;
+  kind: MediaKind;
   peerId: string;
   nickname: string;
   producerId: string;
   paused: boolean;
-  appData?: { mediaTypes: MediaTypes; nickname: string };
+  appData?: { mediaType: MediaType; nickname: string };
 }
 
 export interface CreateTransportRes {
   transportId: string;
-  iceParameters: types.IceParameters;
-  iceCandidates: types.IceCandidate[];
-  dtlsParameters: types.DtlsParameters;
+  iceParameters: IceParameters;
+  iceCandidates: IceCandidate[];
+  dtlsParameters: DtlsParameters;
 }
 
 export interface CreateConsumerRes {
@@ -37,17 +40,17 @@ export interface CreateConsumerRes {
   consumerId: string;
   producerId: string;
   paused: boolean;
-  kind: types.MediaKind;
+  kind: MediaKind;
   nickname: string;
-  rtpParameters: types.RtpParameters;
-  appData?: { mediaTypes: MediaTypes; nickname: string };
+  rtpParameters: RtpParameters;
+  appData?: { mediaType: MediaType; nickname: string };
 }
 
 export interface RemoteStream {
   socketId: string;
   stream?: MediaStream | null;
-  consumer?: types.Consumer<{ mediaTypes: MediaTypes; nickname: string }>;
-  kind?: types.MediaKind;
+  consumer?: Consumer<{ mediaType: MediaType; nickname: string }>;
+  kind?: MediaKind;
   paused?: boolean;
   nickname: string;
   mediaType?: string;
@@ -55,7 +58,7 @@ export interface RemoteStream {
 
 export interface GetProducersRes {
   producerId: string;
-  kind: types.MediaKind;
+  kind: MediaKind;
   peerId: string;
 }
 

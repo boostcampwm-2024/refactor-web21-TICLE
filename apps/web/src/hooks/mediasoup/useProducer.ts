@@ -1,15 +1,20 @@
 import { useParams } from '@tanstack/react-router';
-import { types } from 'mediasoup-client';
 import { MutableRefObject, useRef } from 'react';
 import { Socket } from 'socket.io-client';
-import { client, MediaTypes, SOCKET_EVENTS } from '@repo/mediasoup';
+import { MediaType, SOCKET_EVENTS } from '@repo/mediasoup';
+import {
+  CreateProducerRes,
+  AUDIO_PRODUCER_OPTIONS,
+  VIDEO_PRODUCER_OPTIONS,
+} from '@repo/mediasoup/client';
 
-const VIDEO_PRODUCER_OPTIONS = client.VIDEO_PRODUCER_OPTIONS;
-const AUDIO_PRODUCER_OPTIONS = client.AUDIO_PRODUCER_OPTIONS;
+import type { Producer } from 'mediasoup-client/lib/Producer';
+import type { MediaKind } from 'mediasoup-client/lib/RtpParameters';
+import type { Transport } from 'mediasoup-client/lib/Transport';
 
 interface Transports {
-  sendTransport: types.Transport | null;
-  recvTransport: types.Transport | null;
+  sendTransport: Transport | null;
+  recvTransport: Transport | null;
 }
 
 interface UseProducerProps {
@@ -20,13 +25,13 @@ interface UseProducerProps {
 const useProducer = ({ socketRef, transportsRef }: UseProducerProps) => {
   const { ticleId: roomId } = useParams({ from: '/_authenticated/live/$ticleId' });
 
-  const producersRef = useRef<{ [key in MediaTypes]: types.Producer | null }>({
+  const producersRef = useRef<{ [key in MediaType]: Producer | null }>({
     video: null,
     audio: null,
     screen: null,
   });
 
-  const closeProducer = (type: MediaTypes) => {
+  const closeProducer = (type: MediaType) => {
     const socket = socketRef.current;
     const producer = producersRef.current[type];
 
@@ -37,7 +42,7 @@ const useProducer = ({ socketRef, transportsRef }: UseProducerProps) => {
     producersRef.current[type] = null;
   };
 
-  const pauseProducer = (type: MediaTypes) => {
+  const pauseProducer = (type: MediaType) => {
     const socket = socketRef.current;
     const producer = producersRef.current[type];
 
@@ -52,7 +57,7 @@ const useProducer = ({ socketRef, transportsRef }: UseProducerProps) => {
     });
   };
 
-  const resumeProducer = (type: MediaTypes) => {
+  const resumeProducer = (type: MediaType) => {
     const socket = socketRef.current;
     const producer = producersRef.current[type];
 
@@ -67,19 +72,19 @@ const useProducer = ({ socketRef, transportsRef }: UseProducerProps) => {
     });
   };
 
-  const createProducer = async (type: MediaTypes, track: MediaStreamTrack) => {
+  const createProducer = async (type: MediaType, track: MediaStreamTrack) => {
     const transport = transportsRef.current.sendTransport;
     if (!transport || !track) {
       return null;
     }
 
-    const kind = track.kind as types.MediaKind;
+    const kind = track.kind as MediaKind;
 
     const producerOptions = kind === 'video' ? VIDEO_PRODUCER_OPTIONS : AUDIO_PRODUCER_OPTIONS;
 
     const producer = await transport.produce({
       track,
-      appData: { mediaTypes: type },
+      appData: { mediaType: type },
       ...producerOptions,
     });
 
@@ -99,8 +104,8 @@ const useProducer = ({ socketRef, transportsRef }: UseProducerProps) => {
 
     const params = { roomId };
 
-    return new Promise<client.CreateProducerRes[]>((resolve) => {
-      socket.emit(SOCKET_EVENTS.getProducers, params, (result: client.CreateProducerRes[]) => {
+    return new Promise<CreateProducerRes[]>((resolve) => {
+      socket.emit(SOCKET_EVENTS.getProducers, params, (result: CreateProducerRes[]) => {
         const producers = producersRef.current;
 
         const producerIds = Object.values(producers)
