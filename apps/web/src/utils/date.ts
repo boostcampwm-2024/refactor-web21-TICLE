@@ -1,5 +1,6 @@
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns/format';
 import { ko } from 'date-fns/locale';
+import { parseISO } from 'date-fns/parseISO';
 
 /**
  *
