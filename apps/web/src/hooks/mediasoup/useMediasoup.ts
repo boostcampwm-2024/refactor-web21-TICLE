@@ -1,11 +1,14 @@
 import { useCallback, useEffect } from 'react';
-import { client, SOCKET_EVENTS } from '@repo/mediasoup';
+import { SOCKET_EVENTS } from '@repo/mediasoup';
+import type { CreateProducerRes } from '@repo/mediasoup/client';
 
 import { useLocalStreamAction } from '@/contexts/localStream/context';
 import { useMediasoupAction, useMediasoupState } from '@/contexts/mediasoup/context';
 import { useRemoteStreamAction } from '@/contexts/remoteStream/context';
 
 import useRoom from './useRoom';
+
+import type { Device } from 'mediasoup-client/lib/Device';
 
 interface NewPeerRes {
   peerId: string;
@@ -41,7 +44,7 @@ const useMediasoup = () => {
   const { startCameraStream, startMicStream, clearLocalStream } = useLocalStreamAction();
 
   const setLocalStream = useCallback(
-    async (device: client.Device) => {
+    async (device: Device) => {
       await createSendTransport(device);
 
       Promise.all([startCameraStream(), startMicStream()]);
@@ -50,7 +53,7 @@ const useMediasoup = () => {
   );
 
   const setRemoteStream = useCallback(
-    async (device: client.Device) => {
+    async (device: Device) => {
       await createRecvTransport(device);
 
       const consumers = await createConsumers();
@@ -101,7 +104,7 @@ const useMediasoup = () => {
       resumeRemoteStream(producerId);
     };
 
-    const handleNewProducer = (data: client.CreateProducerRes) => {
+    const handleNewProducer = (data: CreateProducerRes) => {
       if (socket.id === data.peerId) return;
 
       consume(data);
