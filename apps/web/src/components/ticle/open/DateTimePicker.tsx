@@ -1,12 +1,14 @@
-import { isSameDay } from 'date-fns';
+import { isSameDay } from 'date-fns/isSameDay';
 import { ko } from 'date-fns/locale';
-import DatePicker from 'react-datepicker';
+import { lazy, Suspense } from 'react';
 import { Control, useController } from 'react-hook-form';
 import { CreateTicleFormType } from '@repo/types';
 
 import ExclamationIc from '@/assets/icons/exclamation.svg?react';
 
 const todayDate = new Date();
+
+const DatePicker = lazy(() => import('react-datepicker'));
 
 interface DateTimePickerProps {
   required?: boolean;
@@ -56,41 +58,45 @@ function DateTimePicker({ required, control }: DateTimePickerProps) {
         )}
       </label>
       <div className="flex gap-1.5">
-        <DatePicker
-          locale={ko}
-          selected={startDate}
-          onChange={(date: Date | null) => {
-            setStartDate(date);
-            if (endDate && !isSameDay(date as Date, endDate)) {
-              setEndDate(null);
-            }
-          }}
-          showTimeSelect
-          filterTime={filterPassedTime}
-          dateFormat="yyyy년 MM월 dd일 HH:mm"
-          className="w-full rounded-base border border-main px-3.5 py-2.5 text-body1 outline-none placeholder:text-weak focus:border-primary"
-          placeholderText="시작 시간을 선택해 주세요."
-          minDate={todayDate}
-          timeFormat="HH:mm"
-          timeIntervals={30}
-          timeCaption="시간"
-        />
-        <DatePicker
-          locale={ko}
-          selected={endDate}
-          onChange={setEndDate}
-          showTimeSelect
-          filterTime={filterEndTime}
-          dateFormat="yyyy년 MM월 dd일 HH:mm"
-          className="w-full rounded-base border border-main px-3.5 py-2.5 text-body1 outline-none placeholder:text-weak focus:border-primary"
-          placeholderText="종료 시간을 선택해 주세요."
-          minDate={startDate}
-          maxDate={startDate}
-          disabled={!startDate}
-          timeFormat="HH:mm"
-          timeIntervals={30}
-          timeCaption="시간"
-        />
+        <Suspense fallback={null}>
+          <DatePicker
+            locale={ko}
+            selected={startDate}
+            onChange={(date: Date | null) => {
+              setStartDate(date);
+              if (endDate && !isSameDay(date as Date, endDate)) {
+                setEndDate(null);
+              }
+            }}
+            showTimeSelect
+            filterTime={filterPassedTime}
+            dateFormat="yyyy년 MM월 dd일 HH:mm"
+            className="w-full rounded-base border border-main px-3.5 py-2.5 text-body1 outline-none placeholder:text-weak focus:border-primary"
+            placeholderText="시작 시간을 선택해 주세요."
+            minDate={todayDate}
+            timeFormat="HH:mm"
+            timeIntervals={30}
+            timeCaption="시간"
+          />
+        </Suspense>
+        <Suspense fallback={null}>
+          <DatePicker
+            locale={ko}
+            selected={endDate}
+            onChange={setEndDate}
+            showTimeSelect
+            filterTime={filterEndTime}
+            dateFormat="yyyy년 MM월 dd일 HH:mm"
+            className="w-full rounded-base border border-main px-3.5 py-2.5 text-body1 outline-none placeholder:text-weak focus:border-primary"
+            placeholderText="종료 시간을 선택해 주세요."
+            minDate={startDate}
+            maxDate={startDate}
+            disabled={!startDate}
+            timeFormat="HH:mm"
+            timeIntervals={30}
+            timeCaption="시간"
+          />
+        </Suspense>
       </div>
       {(startDateError || endDateError) && (
         <p className="flex items-center gap-1 text-label1 text-error">

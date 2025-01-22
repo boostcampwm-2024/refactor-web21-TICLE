@@ -1,13 +1,15 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Link } from '@tanstack/react-router';
+import { lazy, Suspense } from 'react';
 import { Provider } from '@repo/types';
 
-import UserProfileOfMeDialog from '@/components/user/UserProfileOfMeDialog';
 import useAuthInfo from '@/hooks/useAuthInfo';
 import useModal from '@/hooks/useModal';
 
 import Avatar from '../Avatar';
 import Button from '../Button';
+
+const UserProfileOfMeDialog = lazy(() => import('@/components/user/UserProfileOfMeDialog'));
 
 export const LOGIN_TYPE: Record<Provider, string> = {
   github: 'Github 로그인',
@@ -28,13 +30,15 @@ function User() {
         <span className="text-body1 text-alt">{authInfo?.nickname}</span>
       </section>
       {isOpen && authInfo && (
-        <UserProfileOfMeDialog
-          onClose={onClose}
-          isOpen={isOpen}
-          profileImageUrl={authInfo.profileImageUrl}
-          nickname={authInfo.nickname}
-          loginType={LOGIN_TYPE[authInfo.provider]}
-        />
+        <Suspense fallback={null}>
+          <UserProfileOfMeDialog
+            onClose={onClose}
+            isOpen={isOpen}
+            profileImageUrl={authInfo.profileImageUrl}
+            nickname={authInfo.nickname}
+            loginType={LOGIN_TYPE[authInfo.provider]}
+          />
+        </Suspense>
       )}
     </>
   );

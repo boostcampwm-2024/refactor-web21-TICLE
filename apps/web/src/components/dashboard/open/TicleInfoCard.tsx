@@ -1,15 +1,15 @@
 import { Link, useNavigate } from '@tanstack/react-router';
-import { MouseEvent } from 'react';
+import { lazy, MouseEvent, Suspense } from 'react';
 
 import AiSummaryIc from '@/assets/icons/ai-summary.svg?react';
 import PersonFilledIc from '@/assets/icons/person-filled.svg?react';
 import Button from '@/components/common/Button';
-import { useApplicantsTicle, useStartTicle } from '@/hooks/api/dashboard';
+import { useStartTicle } from '@/hooks/api/dashboard';
 import useModal from '@/hooks/useModal';
 import { formatDateTimeRange } from '@/utils/date';
 
-import ApplicantsDialog from './ApplicantsDialog';
-import AiSummaryDialog from '../AiSummaryDialog';
+const ApplicantsDialog = lazy(() => import('./ApplicantsDialog'));
+const AiSummaryDialog = lazy(() => import('../AiSummaryDialog'));
 
 interface TicleInfoCardProps {
   ticleId: number;
@@ -111,18 +111,22 @@ function TicleInfoCard({
           </Button>
         </div>
         {isApplicantsDialogOpen && (
-          <ApplicantsDialog
-            ticleId={ticleId}
-            onClose={onApplicantsDialogClose}
-            isOpen={isApplicantsDialogOpen}
-          />
+          <Suspense fallback={null}>
+            <ApplicantsDialog
+              ticleId={ticleId}
+              onClose={onApplicantsDialogClose}
+              isOpen={isApplicantsDialogOpen}
+            />
+          </Suspense>
         )}
         {isAiSummaryDialogOpen && (
-          <AiSummaryDialog
-            onClose={onAiSummaryDialogClose}
-            isOpen={isAiSummaryDialogOpen}
-            ticleId={ticleId.toString()}
-          />
+          <Suspense fallback={null}>
+            <AiSummaryDialog
+              onClose={onAiSummaryDialogClose}
+              isOpen={isAiSummaryDialogOpen}
+              ticleId={ticleId.toString()}
+            />
+          </Suspense>
         )}
       </div>
     </Link>
