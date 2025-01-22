@@ -8,288 +8,313 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from '@tanstack/react-router'
+
 // Import Routes
 
-import { Route as rootRoute } from './routes/__root';
-import { Route as AuthenticatedLayoutImport } from './routes/_authenticated/_layout';
-import { Route as IndexImport } from './routes/index';
-import { Route as TicleTicleIdImport } from './routes/ticle/$ticleId';
-import { Route as AuthOauthImport } from './routes/auth/oauth';
-import { Route as AuthLoginImport } from './routes/auth/login';
-import { Route as AuthenticatedDashboardLayoutImport } from './routes/_authenticated/dashboard/_layout';
-import { Route as AuthenticatedTicleOpenImport } from './routes/_authenticated/ticle/open';
-import { Route as AuthenticatedLiveTicleIdImport } from './routes/_authenticated/live/$ticleId';
-import { Route as AuthenticatedDashboardOpenImport } from './routes/_authenticated/dashboard/open';
-import { Route as AuthenticatedDashboardApplyImport } from './routes/_authenticated/dashboard/apply';
+import { Route as rootRoute } from './routes/__root'
+import { Route as AuthenticatedLayoutImport } from './routes/_authenticated/_layout'
+import { Route as IndexImport } from './routes/index'
+import { Route as TicleTicleIdImport } from './routes/ticle/$ticleId'
+import { Route as AuthOauthImport } from './routes/auth/oauth'
+import { Route as AuthenticatedDashboardLayoutImport } from './routes/_authenticated/dashboard/_layout'
+import { Route as AuthenticatedLiveTicleIdImport } from './routes/_authenticated/live/$ticleId'
+
+// Create Virtual Routes
+
+const AuthLoginLazyImport = createFileRoute('/auth/login')()
+const AuthenticatedTicleOpenLazyImport = createFileRoute(
+  '/_authenticated/ticle/open',
+)()
+const AuthenticatedDashboardOpenLazyImport = createFileRoute(
+  '/_authenticated/dashboard/open',
+)()
+const AuthenticatedDashboardApplyLazyImport = createFileRoute(
+  '/_authenticated/dashboard/apply',
+)()
 
 // Create/Update Routes
 
 const AuthenticatedLayoutRoute = AuthenticatedLayoutImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
+
+const AuthLoginLazyRoute = AuthLoginLazyImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/auth/login.lazy').then((d) => d.Route))
 
 const TicleTicleIdRoute = TicleTicleIdImport.update({
   id: '/ticle/$ticleId',
   path: '/ticle/$ticleId',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
 
 const AuthOauthRoute = AuthOauthImport.update({
   id: '/auth/oauth',
   path: '/auth/oauth',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
 
-const AuthLoginRoute = AuthLoginImport.update({
-  id: '/auth/login',
-  path: '/auth/login',
-  getParentRoute: () => rootRoute,
-} as any);
+const AuthenticatedDashboardLayoutRoute =
+  AuthenticatedDashboardLayoutImport.update({
+    id: '/dashboard',
+    path: '/dashboard',
+    getParentRoute: () => AuthenticatedLayoutRoute,
+  } as any)
 
-const AuthenticatedDashboardLayoutRoute = AuthenticatedDashboardLayoutImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthenticatedLayoutRoute,
-} as any);
+const AuthenticatedTicleOpenLazyRoute = AuthenticatedTicleOpenLazyImport.update(
+  {
+    id: '/ticle/open',
+    path: '/ticle/open',
+    getParentRoute: () => AuthenticatedLayoutRoute,
+  } as any,
+).lazy(() =>
+  import('./routes/_authenticated/ticle/open.lazy').then((d) => d.Route),
+)
 
-const AuthenticatedTicleOpenRoute = AuthenticatedTicleOpenImport.update({
-  id: '/ticle/open',
-  path: '/ticle/open',
-  getParentRoute: () => AuthenticatedLayoutRoute,
-} as any);
+const AuthenticatedDashboardOpenLazyRoute =
+  AuthenticatedDashboardOpenLazyImport.update({
+    id: '/open',
+    path: '/open',
+    getParentRoute: () => AuthenticatedDashboardLayoutRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/dashboard/open.lazy').then((d) => d.Route),
+  )
+
+const AuthenticatedDashboardApplyLazyRoute =
+  AuthenticatedDashboardApplyLazyImport.update({
+    id: '/apply',
+    path: '/apply',
+    getParentRoute: () => AuthenticatedDashboardLayoutRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/dashboard/apply.lazy').then((d) => d.Route),
+  )
 
 const AuthenticatedLiveTicleIdRoute = AuthenticatedLiveTicleIdImport.update({
   id: '/live/$ticleId',
   path: '/live/$ticleId',
   getParentRoute: () => AuthenticatedLayoutRoute,
-} as any);
-
-const AuthenticatedDashboardOpenRoute = AuthenticatedDashboardOpenImport.update({
-  id: '/open',
-  path: '/open',
-  getParentRoute: () => AuthenticatedDashboardLayoutRoute,
-} as any);
-
-const AuthenticatedDashboardApplyRoute = AuthenticatedDashboardApplyImport.update({
-  id: '/apply',
-  path: '/apply',
-  getParentRoute: () => AuthenticatedDashboardLayoutRoute,
-} as any);
+} as any)
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
-      id: '/';
-      path: '/';
-      fullPath: '/';
-      preLoaderRoute: typeof IndexImport;
-      parentRoute: typeof rootRoute;
-    };
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
     '/_authenticated': {
-      id: '/_authenticated';
-      path: '';
-      fullPath: '';
-      preLoaderRoute: typeof AuthenticatedLayoutImport;
-      parentRoute: typeof rootRoute;
-    };
+      id: '/_authenticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthenticatedLayoutImport
+      parentRoute: typeof rootRoute
+    }
     '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard';
-      path: '/dashboard';
-      fullPath: '/dashboard';
-      preLoaderRoute: typeof AuthenticatedDashboardLayoutImport;
-      parentRoute: typeof AuthenticatedLayoutImport;
-    };
-    '/auth/login': {
-      id: '/auth/login';
-      path: '/auth/login';
-      fullPath: '/auth/login';
-      preLoaderRoute: typeof AuthLoginImport;
-      parentRoute: typeof rootRoute;
-    };
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardLayoutImport
+      parentRoute: typeof AuthenticatedLayoutImport
+    }
     '/auth/oauth': {
-      id: '/auth/oauth';
-      path: '/auth/oauth';
-      fullPath: '/auth/oauth';
-      preLoaderRoute: typeof AuthOauthImport;
-      parentRoute: typeof rootRoute;
-    };
+      id: '/auth/oauth'
+      path: '/auth/oauth'
+      fullPath: '/auth/oauth'
+      preLoaderRoute: typeof AuthOauthImport
+      parentRoute: typeof rootRoute
+    }
     '/ticle/$ticleId': {
-      id: '/ticle/$ticleId';
-      path: '/ticle/$ticleId';
-      fullPath: '/ticle/$ticleId';
-      preLoaderRoute: typeof TicleTicleIdImport;
-      parentRoute: typeof rootRoute;
-    };
-    '/_authenticated/dashboard/apply': {
-      id: '/_authenticated/dashboard/apply';
-      path: '/apply';
-      fullPath: '/dashboard/apply';
-      preLoaderRoute: typeof AuthenticatedDashboardApplyImport;
-      parentRoute: typeof AuthenticatedDashboardLayoutImport;
-    };
-    '/_authenticated/dashboard/open': {
-      id: '/_authenticated/dashboard/open';
-      path: '/open';
-      fullPath: '/dashboard/open';
-      preLoaderRoute: typeof AuthenticatedDashboardOpenImport;
-      parentRoute: typeof AuthenticatedDashboardLayoutImport;
-    };
+      id: '/ticle/$ticleId'
+      path: '/ticle/$ticleId'
+      fullPath: '/ticle/$ticleId'
+      preLoaderRoute: typeof TicleTicleIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/_authenticated/live/$ticleId': {
-      id: '/_authenticated/live/$ticleId';
-      path: '/live/$ticleId';
-      fullPath: '/live/$ticleId';
-      preLoaderRoute: typeof AuthenticatedLiveTicleIdImport;
-      parentRoute: typeof AuthenticatedLayoutImport;
-    };
+      id: '/_authenticated/live/$ticleId'
+      path: '/live/$ticleId'
+      fullPath: '/live/$ticleId'
+      preLoaderRoute: typeof AuthenticatedLiveTicleIdImport
+      parentRoute: typeof AuthenticatedLayoutImport
+    }
+    '/_authenticated/dashboard/apply': {
+      id: '/_authenticated/dashboard/apply'
+      path: '/apply'
+      fullPath: '/dashboard/apply'
+      preLoaderRoute: typeof AuthenticatedDashboardApplyLazyImport
+      parentRoute: typeof AuthenticatedDashboardLayoutImport
+    }
+    '/_authenticated/dashboard/open': {
+      id: '/_authenticated/dashboard/open'
+      path: '/open'
+      fullPath: '/dashboard/open'
+      preLoaderRoute: typeof AuthenticatedDashboardOpenLazyImport
+      parentRoute: typeof AuthenticatedDashboardLayoutImport
+    }
     '/_authenticated/ticle/open': {
-      id: '/_authenticated/ticle/open';
-      path: '/ticle/open';
-      fullPath: '/ticle/open';
-      preLoaderRoute: typeof AuthenticatedTicleOpenImport;
-      parentRoute: typeof AuthenticatedLayoutImport;
-    };
+      id: '/_authenticated/ticle/open'
+      path: '/ticle/open'
+      fullPath: '/ticle/open'
+      preLoaderRoute: typeof AuthenticatedTicleOpenLazyImport
+      parentRoute: typeof AuthenticatedLayoutImport
+    }
   }
 }
 
 // Create and export the route tree
 
 interface AuthenticatedDashboardLayoutRouteChildren {
-  AuthenticatedDashboardApplyRoute: typeof AuthenticatedDashboardApplyRoute;
-  AuthenticatedDashboardOpenRoute: typeof AuthenticatedDashboardOpenRoute;
+  AuthenticatedDashboardApplyLazyRoute: typeof AuthenticatedDashboardApplyLazyRoute
+  AuthenticatedDashboardOpenLazyRoute: typeof AuthenticatedDashboardOpenLazyRoute
 }
 
-const AuthenticatedDashboardLayoutRouteChildren: AuthenticatedDashboardLayoutRouteChildren = {
-  AuthenticatedDashboardApplyRoute: AuthenticatedDashboardApplyRoute,
-  AuthenticatedDashboardOpenRoute: AuthenticatedDashboardOpenRoute,
-};
+const AuthenticatedDashboardLayoutRouteChildren: AuthenticatedDashboardLayoutRouteChildren =
+  {
+    AuthenticatedDashboardApplyLazyRoute: AuthenticatedDashboardApplyLazyRoute,
+    AuthenticatedDashboardOpenLazyRoute: AuthenticatedDashboardOpenLazyRoute,
+  }
 
 const AuthenticatedDashboardLayoutRouteWithChildren =
-  AuthenticatedDashboardLayoutRoute._addFileChildren(AuthenticatedDashboardLayoutRouteChildren);
+  AuthenticatedDashboardLayoutRoute._addFileChildren(
+    AuthenticatedDashboardLayoutRouteChildren,
+  )
 
 interface AuthenticatedLayoutRouteChildren {
-  AuthenticatedDashboardLayoutRoute: typeof AuthenticatedDashboardLayoutRouteWithChildren;
-  AuthenticatedLiveTicleIdRoute: typeof AuthenticatedLiveTicleIdRoute;
-  AuthenticatedTicleOpenRoute: typeof AuthenticatedTicleOpenRoute;
+  AuthenticatedDashboardLayoutRoute: typeof AuthenticatedDashboardLayoutRouteWithChildren
+  AuthenticatedLiveTicleIdRoute: typeof AuthenticatedLiveTicleIdRoute
+  AuthenticatedTicleOpenLazyRoute: typeof AuthenticatedTicleOpenLazyRoute
 }
 
 const AuthenticatedLayoutRouteChildren: AuthenticatedLayoutRouteChildren = {
-  AuthenticatedDashboardLayoutRoute: AuthenticatedDashboardLayoutRouteWithChildren,
+  AuthenticatedDashboardLayoutRoute:
+    AuthenticatedDashboardLayoutRouteWithChildren,
   AuthenticatedLiveTicleIdRoute: AuthenticatedLiveTicleIdRoute,
-  AuthenticatedTicleOpenRoute: AuthenticatedTicleOpenRoute,
-};
+  AuthenticatedTicleOpenLazyRoute: AuthenticatedTicleOpenLazyRoute,
+}
 
-const AuthenticatedLayoutRouteWithChildren = AuthenticatedLayoutRoute._addFileChildren(
-  AuthenticatedLayoutRouteChildren
-);
+const AuthenticatedLayoutRouteWithChildren =
+  AuthenticatedLayoutRoute._addFileChildren(AuthenticatedLayoutRouteChildren)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute;
-  '': typeof AuthenticatedLayoutRouteWithChildren;
-  '/dashboard': typeof AuthenticatedDashboardLayoutRouteWithChildren;
-  '/auth/login': typeof AuthLoginRoute;
-  '/auth/oauth': typeof AuthOauthRoute;
-  '/ticle/$ticleId': typeof TicleTicleIdRoute;
-  '/dashboard/apply': typeof AuthenticatedDashboardApplyRoute;
-  '/dashboard/open': typeof AuthenticatedDashboardOpenRoute;
-  '/live/$ticleId': typeof AuthenticatedLiveTicleIdRoute;
-  '/ticle/open': typeof AuthenticatedTicleOpenRoute;
+  '/': typeof IndexRoute
+  '': typeof AuthenticatedLayoutRouteWithChildren
+  '/dashboard': typeof AuthenticatedDashboardLayoutRouteWithChildren
+  '/auth/oauth': typeof AuthOauthRoute
+  '/ticle/$ticleId': typeof TicleTicleIdRoute
+  '/auth/login': typeof AuthLoginLazyRoute
+  '/live/$ticleId': typeof AuthenticatedLiveTicleIdRoute
+  '/dashboard/apply': typeof AuthenticatedDashboardApplyLazyRoute
+  '/dashboard/open': typeof AuthenticatedDashboardOpenLazyRoute
+  '/ticle/open': typeof AuthenticatedTicleOpenLazyRoute
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute;
-  '': typeof AuthenticatedLayoutRouteWithChildren;
-  '/dashboard': typeof AuthenticatedDashboardLayoutRouteWithChildren;
-  '/auth/login': typeof AuthLoginRoute;
-  '/auth/oauth': typeof AuthOauthRoute;
-  '/ticle/$ticleId': typeof TicleTicleIdRoute;
-  '/dashboard/apply': typeof AuthenticatedDashboardApplyRoute;
-  '/dashboard/open': typeof AuthenticatedDashboardOpenRoute;
-  '/live/$ticleId': typeof AuthenticatedLiveTicleIdRoute;
-  '/ticle/open': typeof AuthenticatedTicleOpenRoute;
+  '/': typeof IndexRoute
+  '': typeof AuthenticatedLayoutRouteWithChildren
+  '/dashboard': typeof AuthenticatedDashboardLayoutRouteWithChildren
+  '/auth/oauth': typeof AuthOauthRoute
+  '/ticle/$ticleId': typeof TicleTicleIdRoute
+  '/auth/login': typeof AuthLoginLazyRoute
+  '/live/$ticleId': typeof AuthenticatedLiveTicleIdRoute
+  '/dashboard/apply': typeof AuthenticatedDashboardApplyLazyRoute
+  '/dashboard/open': typeof AuthenticatedDashboardOpenLazyRoute
+  '/ticle/open': typeof AuthenticatedTicleOpenLazyRoute
 }
 
 export interface FileRoutesById {
-  __root__: typeof rootRoute;
-  '/': typeof IndexRoute;
-  '/_authenticated': typeof AuthenticatedLayoutRouteWithChildren;
-  '/_authenticated/dashboard': typeof AuthenticatedDashboardLayoutRouteWithChildren;
-  '/auth/login': typeof AuthLoginRoute;
-  '/auth/oauth': typeof AuthOauthRoute;
-  '/ticle/$ticleId': typeof TicleTicleIdRoute;
-  '/_authenticated/dashboard/apply': typeof AuthenticatedDashboardApplyRoute;
-  '/_authenticated/dashboard/open': typeof AuthenticatedDashboardOpenRoute;
-  '/_authenticated/live/$ticleId': typeof AuthenticatedLiveTicleIdRoute;
-  '/_authenticated/ticle/open': typeof AuthenticatedTicleOpenRoute;
+  __root__: typeof rootRoute
+  '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedLayoutRouteWithChildren
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardLayoutRouteWithChildren
+  '/auth/oauth': typeof AuthOauthRoute
+  '/ticle/$ticleId': typeof TicleTicleIdRoute
+  '/auth/login': typeof AuthLoginLazyRoute
+  '/_authenticated/live/$ticleId': typeof AuthenticatedLiveTicleIdRoute
+  '/_authenticated/dashboard/apply': typeof AuthenticatedDashboardApplyLazyRoute
+  '/_authenticated/dashboard/open': typeof AuthenticatedDashboardOpenLazyRoute
+  '/_authenticated/ticle/open': typeof AuthenticatedTicleOpenLazyRoute
 }
 
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | ''
     | '/dashboard'
-    | '/auth/login'
     | '/auth/oauth'
     | '/ticle/$ticleId'
+    | '/auth/login'
+    | '/live/$ticleId'
     | '/dashboard/apply'
     | '/dashboard/open'
-    | '/live/$ticleId'
-    | '/ticle/open';
-  fileRoutesByTo: FileRoutesByTo;
+    | '/ticle/open'
+  fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | ''
     | '/dashboard'
-    | '/auth/login'
     | '/auth/oauth'
     | '/ticle/$ticleId'
+    | '/auth/login'
+    | '/live/$ticleId'
     | '/dashboard/apply'
     | '/dashboard/open'
-    | '/live/$ticleId'
-    | '/ticle/open';
+    | '/ticle/open'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/_authenticated/dashboard'
-    | '/auth/login'
     | '/auth/oauth'
     | '/ticle/$ticleId'
+    | '/auth/login'
+    | '/_authenticated/live/$ticleId'
     | '/_authenticated/dashboard/apply'
     | '/_authenticated/dashboard/open'
-    | '/_authenticated/live/$ticleId'
-    | '/_authenticated/ticle/open';
-  fileRoutesById: FileRoutesById;
+    | '/_authenticated/ticle/open'
+  fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  AuthenticatedLayoutRoute: typeof AuthenticatedLayoutRouteWithChildren;
-  AuthLoginRoute: typeof AuthLoginRoute;
-  AuthOauthRoute: typeof AuthOauthRoute;
-  TicleTicleIdRoute: typeof TicleTicleIdRoute;
+  IndexRoute: typeof IndexRoute
+  AuthenticatedLayoutRoute: typeof AuthenticatedLayoutRouteWithChildren
+  AuthOauthRoute: typeof AuthOauthRoute
+  TicleTicleIdRoute: typeof TicleTicleIdRoute
+  AuthLoginLazyRoute: typeof AuthLoginLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedLayoutRoute: AuthenticatedLayoutRouteWithChildren,
-  AuthLoginRoute: AuthLoginRoute,
   AuthOauthRoute: AuthOauthRoute,
   TicleTicleIdRoute: TicleTicleIdRoute,
-};
+  AuthLoginLazyRoute: AuthLoginLazyRoute,
+}
 
 export const routeTree = rootRoute
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
 /* ROUTE_MANIFEST_START
 {
@@ -299,9 +324,9 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/_authenticated",
-        "/auth/login",
         "/auth/oauth",
-        "/ticle/$ticleId"
+        "/ticle/$ticleId",
+        "/auth/login"
       ]
     },
     "/": {
@@ -323,29 +348,29 @@ export const routeTree = rootRoute
         "/_authenticated/dashboard/open"
       ]
     },
-    "/auth/login": {
-      "filePath": "auth/login.tsx"
-    },
     "/auth/oauth": {
       "filePath": "auth/oauth.tsx"
     },
     "/ticle/$ticleId": {
       "filePath": "ticle/$ticleId.tsx"
     },
-    "/_authenticated/dashboard/apply": {
-      "filePath": "_authenticated/dashboard/apply.tsx",
-      "parent": "/_authenticated/dashboard"
-    },
-    "/_authenticated/dashboard/open": {
-      "filePath": "_authenticated/dashboard/open.tsx",
-      "parent": "/_authenticated/dashboard"
+    "/auth/login": {
+      "filePath": "auth/login.lazy.tsx"
     },
     "/_authenticated/live/$ticleId": {
       "filePath": "_authenticated/live/$ticleId.tsx",
       "parent": "/_authenticated"
     },
+    "/_authenticated/dashboard/apply": {
+      "filePath": "_authenticated/dashboard/apply.lazy.tsx",
+      "parent": "/_authenticated/dashboard"
+    },
+    "/_authenticated/dashboard/open": {
+      "filePath": "_authenticated/dashboard/open.lazy.tsx",
+      "parent": "/_authenticated/dashboard"
+    },
     "/_authenticated/ticle/open": {
-      "filePath": "_authenticated/ticle/open.tsx",
+      "filePath": "_authenticated/ticle/open.lazy.tsx",
       "parent": "/_authenticated"
     }
   }

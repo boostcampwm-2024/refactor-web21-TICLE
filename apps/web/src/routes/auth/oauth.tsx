@@ -12,7 +12,6 @@ export const Route = createFileRoute('/auth/oauth')({
       redirect: typeof search.redirect === 'string' ? search.redirect : undefined,
     };
   },
-
   component: RouteComponent,
 });
 
