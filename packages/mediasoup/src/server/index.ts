@@ -1,6 +1,6 @@
 import { types } from 'mediasoup';
 
-import { MediaTypes, StreamStatus } from '../types';
+import { MediaType, StreamStatus } from '../types';
 
 export interface JoinRoomDto {
   roomId: string;
@@ -22,7 +22,7 @@ export interface CreateProducerDto {
   kind: types.MediaKind;
   rtpParameters: types.RtpParameters;
   roomId: string;
-  appData: { mediaTypes: MediaTypes; nickname: string };
+  appData: { mediaType: MediaType; nickname: string };
 }
 
 export interface CreateConsumerDto {
@@ -32,7 +32,7 @@ export interface CreateConsumerDto {
   roomId: string;
   rtpCapabilities: types.RtpCapabilities;
   nickname: string;
-  appData?: { mediaTypes: MediaTypes; nickname: string };
+  appData?: { mediaType: MediaType; nickname: string };
 }
 
 export interface CreateConsumersDto {
@@ -53,7 +53,7 @@ export interface GetProducersRes {
   nickname: string;
   producerId: string;
   paused: boolean;
-  appData?: { mediaTypes: MediaTypes; nickname: string };
+  appData?: { mediaType: MediaType; nickname: string };
 }
 
 export interface ChangeProducerStateDto {

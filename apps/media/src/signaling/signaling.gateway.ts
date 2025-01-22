@@ -107,6 +107,7 @@ export class SignalingGateway implements OnGatewayDisconnect {
   handleDisconnect(@ConnectedSocket() client: Socket) {
     const roomId = this.mediasoupService.disconnect(client.id);
     const isMaster = this.roomService.checkIsMaster(roomId, client.id);
+
     if (isMaster) {
       client.to(roomId).emit(SOCKET_EVENTS.roomClosed);
       this.recordService.stopRecord(roomId);
@@ -128,7 +129,7 @@ export class SignalingGateway implements OnGatewayDisconnect {
   ) {
     this.mediasoupService.closeProducer(roomId, producerId, client.id);
 
-    client.to(roomId).emit(SOCKET_EVENTS.producerClosed, { producerId });
+    client.to(roomId).emit(SOCKET_EVENTS.producerClosed, { peerId: client.id, producerId });
   }
 
   @SubscribeMessage(SOCKET_EVENTS.producerStatusChange)

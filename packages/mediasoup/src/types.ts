@@ -11,4 +11,4 @@ export const MEDIA_TYPES = {
   screen: 'screen',
 } as const;
 
-export type MediaTypes = (typeof MEDIA_TYPES)[keyof typeof MEDIA_TYPES];
+export type MediaType = (typeof MEDIA_TYPES)[keyof typeof MEDIA_TYPES];

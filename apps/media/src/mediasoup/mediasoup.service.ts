@@ -5,7 +5,7 @@ import { WsException } from '@nestjs/websockets';
 import * as mediasoup from 'mediasoup';
 import { types } from 'mediasoup';
 import { Worker } from 'mediasoup/node/lib/types';
-import { MediaTypes, server, STREAM_STATUS } from '@repo/mediasoup';
+import { MediaType, server, STREAM_STATUS } from '@repo/mediasoup';
 import { ErrorMessage } from '@repo/types';
 
 import { RoomService } from '@/room/room.service';
@@ -107,7 +107,7 @@ export class MediasoupService implements OnModuleInit {
     rtpParameters: types.RtpParameters,
     transportId: string,
     roomId: string,
-    appData: { mediaTypes: MediaTypes }
+    appData: { mediaType: MediaType }
   ) {
     const room = this.roomService.getRoom(roomId);
     const peer = room.getPeer(socketId);
@@ -117,7 +117,7 @@ export class MediasoupService implements OnModuleInit {
       kind,
       rtpParameters,
       appData,
-      paused: appData.mediaTypes !== 'screen',
+      paused: appData.mediaType !== 'screen',
     });
 
     peer.addProducer(producer);

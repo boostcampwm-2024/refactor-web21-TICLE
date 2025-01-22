@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import { MediaTypes } from '@repo/mediasoup';
+import { MediaType } from '@repo/mediasoup';
 
 export interface LocalStream {
   stream: MediaStream | null;
@@ -28,9 +28,9 @@ interface StreamActionContextProps {
   startCameraStream: () => void;
   startMicStream: () => void;
   startScreenStream: () => void;
-  pauseStream: (type: MediaTypes) => void;
-  resumeStream: (type: MediaTypes) => void;
-  closeStream: (type: MediaTypes) => void;
+  pauseStream: (type: MediaType) => void;
+  resumeStream: (type: MediaType) => void;
+  closeStream: (type: MediaType) => void;
   clearLocalStream: () => void;
 
   setSelectedVideoDeviceId: (deviceId: string) => void;
