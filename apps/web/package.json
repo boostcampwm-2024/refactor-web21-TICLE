@@ -10,7 +10,7 @@
     "lint": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
-    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,md}\"",
+    "format:check": "prettier --write --check \"src/**/*.{js,jsx,ts,tsx,json,md}\"",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
