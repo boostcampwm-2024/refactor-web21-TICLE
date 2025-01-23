@@ -3,7 +3,6 @@ import fs from 'fs';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WsException } from '@nestjs/websockets';
-import { types } from 'mediasoup';
 import { ErrorMessage } from '@repo/types';
 
 import { MediasoupService } from '@/mediasoup/mediasoup.service';
@@ -29,82 +28,67 @@ export class RecordService {
     }
   }
 
-  async startRecord(roomId: string, socketId: string) {
+  async startRecord(roomId: string) {
     const room = this.roomService.getRoom(roomId);
     if (!room) {
       return;
     }
     const router = room.router;
-    const peer = room.getPeer(socketId);
-    const audioProducer = peer.getAudioProducer();
-    if (!audioProducer) {
-      return;
-    }
-
     const port = this.getPort();
-    const recordInfo = this.setRecordInfo(roomId, port, socketId);
-    const plainTransport = await this.addPlainTransport(recordInfo, router);
+
+    const plainTransport = await this.mediasoupService.createPlainTransport(router);
     plainTransport.connect({
       ip: '127.0.0.1',
       port,
     });
-    await this.addConsumer(
-      recordInfo,
-      router.rtpCapabilities,
-      audioProducer.id,
-      audioProducer.paused,
-      roomId
+
+    const masterPeer = room.getPeer(room.masterSocketId);
+    const masterPeerAudioProducer = masterPeer.getAudioProducer();
+    const audioProducers = room.getAllAudioProducers();
+
+    const recordInfo = new RecordInfo(
+      port,
+      this.ncpService,
+      plainTransport,
+      router.rtpCapabilities
     );
-    if (!audioProducer.paused) {
-      recordInfo.createFfmpegProcess(roomId);
-    }
-  }
-
-  private setRecordInfo(roomId: string, port: number, socketId: string) {
-    const recordInfo = new RecordInfo(port, socketId, this.ncpService);
     this.recordInfos.set(roomId, recordInfo);
-    return recordInfo;
+
+    audioProducers.forEach(async (producer) => {
+      const consumer = await this.mediasoupService.createRecordConsumer(
+        plainTransport,
+        producer.id,
+        recordInfo.rtpCapabilities,
+        producer.paused
+      );
+      recordInfo.addRecordConsumer(consumer);
+
+      if (producer.id === masterPeerAudioProducer.id) {
+        recordInfo.setMasterConsumerRtpParameters(consumer.rtpParameters);
+        if (producer.paused) {
+          consumer.once('producerresume', () => {
+            recordInfo.createFfmpegProcess(roomId);
+          });
+          return;
+        }
+        recordInfo.createFfmpegProcess(roomId);
+      }
+    });
   }
 
-  private async addPlainTransport(recordInfo: RecordInfo, router: types.Router) {
-    const plainTransport = await this.mediasoupService.createPlainTransport(router);
-    recordInfo.setPlainTransport(plainTransport);
-    return plainTransport;
-  }
-
-  private async addConsumer(
-    recordInfo: RecordInfo,
-    rtpCapabilities: types.RtpCapabilities,
-    producerId: string,
-    producerPaused: boolean,
-    roomId: string
-  ) {
+  async addNewRecordConsumer(roomId: string, producerId: string, producerPaused: boolean) {
+    const recordInfo = this.recordInfos.get(roomId);
+    if (!recordInfo) {
+      return;
+    }
     const plainTransport = recordInfo.plainTransport;
     const consumer = await this.mediasoupService.createRecordConsumer(
       plainTransport,
       producerId,
-      rtpCapabilities,
+      recordInfo.rtpCapabilities,
       producerPaused
     );
-
-    recordInfo.setRecordConsumer(consumer, roomId);
-    return consumer;
-  }
-
-  pauseRecord(roomId: string) {
-    const recordInfo = this.recordInfos.get(roomId);
-    if (!recordInfo) {
-      return;
-    }
-    recordInfo.pauseRecordProcess();
-  }
-
-  resumeRecord(roomId: string) {
-    const recordInfo = this.recordInfos.get(roomId);
-    if (!recordInfo) {
-      return;
-    }
-    recordInfo.resumeRecordProcess();
+    recordInfo.addRecordConsumer(consumer);
   }
 
   stopRecord(roomId: string) {

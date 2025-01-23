@@ -89,9 +89,10 @@ export class SignalingGateway implements OnGatewayDisconnect {
       appData,
       paused: producerData.paused,
     };
-
+    if (kind === 'audio') {
+      this.recordService.addNewRecordConsumer(roomId, producerData.producerId, producerData.paused);
+    }
     client.to(roomId).emit(SOCKET_EVENTS.newProducer, createProducerRes);
-
     return createProducerRes;
   }
 
@@ -200,8 +201,8 @@ export class SignalingGateway implements OnGatewayDisconnect {
   }
 
   @SubscribeMessage(SOCKET_EVENTS.startRecord)
-  async startRecord(@ConnectedSocket() client: Socket, @MessageBody('roomId') roomId: string) {
-    await this.recordService.startRecord(roomId, client.id);
+  async startRecord(@MessageBody('roomId') roomId: string) {
+    await this.recordService.startRecord(roomId);
   }
 
   @SubscribeMessage(SOCKET_EVENTS.stopRecord)
@@ -209,15 +210,6 @@ export class SignalingGateway implements OnGatewayDisconnect {
     this.recordService.stopRecord(roomId);
   }
 
-  @SubscribeMessage(SOCKET_EVENTS.pauseRecord)
-  pauseRecord(@MessageBody('roomId') roomId: string) {
-    this.recordService.pauseRecord(roomId);
-  }
-
-  @SubscribeMessage(SOCKET_EVENTS.resumeRecord)
-  resumeRecord(@MessageBody('roomId') roomId: string) {
-    this.recordService.resumeRecord(roomId);
-  }
   @SubscribeMessage(SOCKET_EVENTS.getIsRecording)
   getIsRecording(@MessageBody('roomId') roomId: string) {
     const isRecording = this.recordService.getIsRecording(roomId);

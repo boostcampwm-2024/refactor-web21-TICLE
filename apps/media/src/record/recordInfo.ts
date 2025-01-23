@@ -1,52 +1,49 @@
 import { unlinkSync, writeFileSync } from 'fs';
 
 import ffmpeg, { FfmpegCommand } from 'fluent-ffmpeg';
-import { types } from 'mediasoup';
+import { Consumer, PlainTransport, RtpCapabilities, RtpParameters } from 'mediasoup/node/lib/types';
 
 import { NcpService } from '@/ncp/ncp.service';
 
 export class RecordInfo {
-  socketId: string;
-  plainTransport: types.PlainTransport;
-  recordConsumer: types.Consumer;
+  plainTransport: PlainTransport;
+  recordConsumers: Map<string, Consumer>;
+  masterConsumerRtpParameters: RtpParameters;
+  rtpCapabilities: RtpCapabilities;
+  port: number;
 
   ncpService: NcpService;
 
-  port: number;
-
   ffmpegProcess: FfmpegCommand;
 
-  constructor(port: number, socketId: string, ncpService: NcpService) {
+  constructor(
+    port: number,
+    ncpService: NcpService,
+    plainTransport: PlainTransport,
+    rtpCapabilities: RtpCapabilities
+  ) {
     this.port = port;
-    this.socketId = socketId;
     this.ncpService = ncpService;
-  }
-
-  setPlainTransport(plainTransport: types.PlainTransport) {
+    this.recordConsumers = new Map();
     this.plainTransport = plainTransport;
+    this.rtpCapabilities = rtpCapabilities;
   }
 
-  setRecordConsumer(recordConsumer: types.Consumer, roomId: string) {
-    this.recordConsumer = recordConsumer;
-    this.recordConsumer.on('producerresume', () => {
-      if (!this.ffmpegProcess) {
-        this.createFfmpegProcess(roomId);
-      }
+  addRecordConsumer(recordConsumer: Consumer) {
+    recordConsumer.on('producerclose', () => {
+      this.recordConsumers.delete(recordConsumer.id);
     });
+    this.recordConsumers.set(recordConsumer.id, recordConsumer);
   }
-
-  pauseRecordProcess() {
-    this.recordConsumer.pause();
+  setMasterConsumerRtpParameters(rtpParameters: RtpParameters) {
+    this.masterConsumerRtpParameters = rtpParameters;
   }
-
-  resumeRecordProcess() {
-    this.recordConsumer.resume();
-  }
-
   clearStream() {
-    if (this.recordConsumer) {
-      this.recordConsumer.close();
-      this.recordConsumer = null;
+    if (this.recordConsumers) {
+      this.recordConsumers.forEach((consumer) => {
+        consumer.close();
+      });
+      this.recordConsumers.clear();
     }
     if (this.plainTransport) {
       this.plainTransport.close();
@@ -59,8 +56,7 @@ export class RecordInfo {
       return;
     }
 
-    const rtpParameter = this.recordConsumer.rtpParameters;
-    const sdpString = this.createSdpText(this.port, rtpParameter);
+    const sdpString = this.createSdpText();
     const sdpFilePath = `./record/${roomId}_${Date.now()}.sdp`;
     writeFileSync(sdpFilePath, sdpString);
 
@@ -91,15 +87,15 @@ export class RecordInfo {
     this.ffmpegProcess = ffmpegCommand;
   }
 
-  private createSdpText = (port: number, rtpParameters: types.RtpParameters) => {
-    const { codecs } = rtpParameters;
+  private createSdpText = () => {
+    const { codecs } = this.masterConsumerRtpParameters;
     const payloadType = codecs[0].payloadType;
     return `v=0
 o=- 0 0 IN IP4 127.0.0.1
 s=FFmpeg
 c=IN IP4 127.0.0.1
 t=0 0
-m=audio ${port} RTP/AVP ${payloadType}
+m=audio ${this.port} RTP/AVP ${payloadType}
 a=rtpmap:${payloadType} opus/48000/2
 a=fmtp:${payloadType} minptime=10;useinbandfec=1
 a=sendrecv
