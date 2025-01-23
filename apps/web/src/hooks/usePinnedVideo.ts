@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { client } from '@repo/mediasoup';
+import { RemoteStream } from '@repo/mediasoup/client';
 
 import { useLocalStreamState } from '@/contexts/localStream/context';
 import { useRemoteStreamState } from '@/contexts/remoteStream/context';
@@ -8,11 +8,9 @@ const usePinnedVideo = () => {
   const { video, screen, audio } = useLocalStreamState();
   const { videoStreams } = useRemoteStreamState();
 
-  const [pinnedVideoStreamData, setPinnedVideoStreamData] = useState<client.RemoteStream | null>(
-    null
-  );
+  const [pinnedVideoStreamData, setPinnedVideoStreamData] = useState<RemoteStream | null>(null);
 
-  const selectPinnedVideo = (stream: client.RemoteStream) => {
+  const selectPinnedVideo = (stream: RemoteStream) => {
     setPinnedVideoStreamData(stream);
   };
 

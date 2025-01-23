@@ -1,12 +1,15 @@
 import { useParams } from '@tanstack/react-router';
 import { MutableRefObject, useRef } from 'react';
 import { Socket } from 'socket.io-client';
-import type { client } from '@repo/mediasoup';
 import { SOCKET_EVENTS, TRANSPORT_EVENTS } from '@repo/mediasoup';
+import type { CreateTransportRes } from '@repo/mediasoup/client';
+
+import type { Device } from 'mediasoup-client/lib/Device';
+import type { Transport } from 'mediasoup-client/lib/Transport';
 
 interface TransportRef {
-  sendTransport: client.BaseTransport | null;
-  recvTransport: client.BaseTransport | null;
+  sendTransport: Transport | null;
+  recvTransport: Transport | null;
 }
 
 const useTransport = (socketRef: MutableRefObject<Socket | null>) => {
@@ -17,56 +20,48 @@ const useTransport = (socketRef: MutableRefObject<Socket | null>) => {
     recvTransport: null,
   });
 
-  const createSendTransport = async (device: client.Device) => {
+  const createSendTransport = async (device: Device) => {
     const socket = socketRef.current;
 
     if (!socket) return;
 
     return new Promise<void>((resolve) => {
-      socket.emit(
-        SOCKET_EVENTS.createTransport,
-        { roomId },
-        async (result: client.CreateTransportRes) => {
-          const { transportId, ...rest } = result;
+      socket.emit(SOCKET_EVENTS.createTransport, { roomId }, async (result: CreateTransportRes) => {
+        const { transportId, ...rest } = result;
 
-          const transport = device.createSendTransport({ id: transportId, ...rest });
+        const transport = device.createSendTransport({ id: transportId, ...rest });
 
-          transportsRef.current.sendTransport = transport;
+        transportsRef.current.sendTransport = transport;
 
-          connectTransport(transport, transportId);
-          produceTransport(transport, transportId);
+        connectTransport(transport, transportId);
+        produceTransport(transport, transportId);
 
-          resolve();
-        }
-      );
+        resolve();
+      });
     });
   };
 
-  const createRecvTransport = async (device: client.Device) => {
+  const createRecvTransport = async (device: Device) => {
     const socket = socketRef.current;
 
     if (!socket) return;
 
     return new Promise<void>((resolve) => {
-      socket.emit(
-        SOCKET_EVENTS.createTransport,
-        { roomId },
-        async (result: client.CreateTransportRes) => {
-          const { transportId, ...rest } = result;
+      socket.emit(SOCKET_EVENTS.createTransport, { roomId }, async (result: CreateTransportRes) => {
+        const { transportId, ...rest } = result;
 
-          const transport = device.createRecvTransport({ id: transportId, ...rest });
+        const transport = device.createRecvTransport({ id: transportId, ...rest });
 
-          transportsRef.current.recvTransport = transport;
+        transportsRef.current.recvTransport = transport;
 
-          connectTransport(transport, transportId);
+        connectTransport(transport, transportId);
 
-          resolve();
-        }
-      );
+        resolve();
+      });
     });
   };
 
-  const connectTransport = async (transport: client.BaseTransport, transportId: string) => {
+  const connectTransport = async (transport: Transport, transportId: string) => {
     const socket = socketRef.current;
 
     if (!socket) return;
@@ -77,14 +72,13 @@ const useTransport = (socketRef: MutableRefObject<Socket | null>) => {
     });
   };
 
-  const produceTransport = async (transport: client.BaseTransport, transportId: string) => {
+  const produceTransport = async (transport: Transport, transportId: string) => {
     const socket = socketRef.current;
 
     if (!socket) return;
 
     transport.on(TRANSPORT_EVENTS.produce, ({ rtpParameters, kind, appData }, callback) => {
       const data = { rtpParameters, kind, transportId, roomId, appData };
-
       socket.emit(SOCKET_EVENTS.produce, data, ({ producerId }: { producerId: string }) => {
         callback({ id: producerId });
       });

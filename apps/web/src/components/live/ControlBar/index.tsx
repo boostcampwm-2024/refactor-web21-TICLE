@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { SOCKET_EVENTS } from '@repo/mediasoup';
 
 import CameraOffIc from '@/assets/icons/camera-off.svg?react';
@@ -11,12 +11,13 @@ import ScreenOffIc from '@/assets/icons/screen-off.svg?react';
 import ScreenOnIc from '@/assets/icons/screen-on.svg?react';
 import SettingIc from '@/assets/icons/setting.svg?react';
 import ToggleButton from '@/components/live/ControlBar/ToggleButton';
-import ExitDialog from '@/components/live/ExitDialog';
-import SettingDialog from '@/components/live/SettingDialog';
 import { ENV } from '@/constants/env';
 import { useLocalStreamAction, useLocalStreamState } from '@/contexts/localStream/context';
 import { useMediasoupState } from '@/contexts/mediasoup/context';
 import useModal from '@/hooks/useModal';
+
+const SettingDialog = lazy(() => import('@/components/live/SettingDialog'));
+const ExitDialog = lazy(() => import('@/components/live/ExitDialog'));
 
 interface ControlBarProps {
   isOwner: boolean;
@@ -161,19 +162,23 @@ const ControlBar = ({ isOwner, onTicleEnd }: ControlBarProps) => {
         />
       </div>
       {isOpenExitModal && (
-        <ExitDialog
-          isOpen={isOpenExitModal}
-          isOwner={isOwner}
-          handleExit={handleExit}
-          onClose={onCloseExitModal}
-        />
+        <Suspense fallback={null}>
+          <ExitDialog
+            isOpen={isOpenExitModal}
+            isOwner={isOwner}
+            handleExit={handleExit}
+            onClose={onCloseExitModal}
+          />
+        </Suspense>
       )}
       {isOpenSettingModal && (
-        <SettingDialog
-          isOpen={isOpenSettingModal}
-          onClose={onCloseSettingModal}
-          isOwner={isOwner}
-        />
+        <Suspense fallback={null}>
+          <SettingDialog
+            isOpen={isOpenSettingModal}
+            onClose={onCloseSettingModal}
+            isOwner={isOwner}
+          />
+        </Suspense>
       )}
     </>
   );

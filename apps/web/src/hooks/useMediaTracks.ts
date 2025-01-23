@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MediaTypes } from '@repo/mediasoup';
+import { MediaType } from '@repo/mediasoup';
 
 import { LocalStream, MediaDevice } from '@/contexts/localStream/context';
 import { toast } from '@/core/toast';
@@ -87,7 +87,7 @@ const useMediaTracks = () => {
     });
   };
 
-  const getMediaState = (type: MediaTypes) => {
+  const getMediaState = (type: MediaType) => {
     if (type === 'video') {
       return [video, setVideo] as const;
     }

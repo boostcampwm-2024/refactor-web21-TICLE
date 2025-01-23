@@ -1,27 +1,25 @@
 import { createContext, useContext } from 'react';
-import { client } from '@repo/mediasoup';
+import { CreateProducerRes, RemoteStream } from '@repo/mediasoup/client';
 
 interface RemoteStreamState {
-  videoStreams: client.RemoteStream[];
-  audioStreams: client.RemoteStream[];
+  videoStreams: RemoteStream[];
+  audioStreams: RemoteStream[];
 }
 
 interface MediasoupActionContextProps {
-  consume: (data: client.CreateProducerRes) => Promise<void>;
-  createConsumers: () => Promise<client.RemoteStream[]>;
+  consume: (data: CreateProducerRes) => Promise<void>;
+  createConsumers: () => Promise<RemoteStream[]>;
 
-  resumeAudioConsumers: (consumers: client.RemoteStream[]) => void;
-  resumeVideoConsumers: (consumers: client.RemoteStream[]) => void;
+  resumeAudioConsumers: (consumers: RemoteStream[]) => void;
+  resumeVideoConsumers: (consumers: RemoteStream[]) => void;
 
-  pauseVideoConsumers: (consumers: client.RemoteStream[]) => void;
+  pauseVideoConsumers: (consumers: RemoteStream[]) => void;
 
-  filterRemoteStream: (cb: (remoteStream: client.RemoteStream) => boolean) => void;
+  filterRemoteStream: (cb: (remoteStream: RemoteStream) => boolean) => void;
   pauseRemoteStream: (producerId: string) => void;
   resumeRemoteStream: (producerId: string) => void;
   clearRemoteStream: () => void;
-  addInitialRemoteStream: (
-    initialStream: Pick<client.RemoteStream, 'nickname' | 'socketId'>
-  ) => void;
+  addInitialRemoteStream: (initialStream: Pick<RemoteStream, 'nickname' | 'socketId'>) => void;
 }
 
 export const RemoteStreamStateContext = createContext<RemoteStreamState | undefined>(undefined);

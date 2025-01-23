@@ -1,12 +1,12 @@
 import { Link, useNavigate } from '@tanstack/react-router';
-import { MouseEvent } from 'react';
+import { lazy, MouseEvent, Suspense } from 'react';
 
 import AiSummaryIc from '@/assets/icons/ai-summary.svg?react';
 import Button from '@/components/common/Button';
 import useModal from '@/hooks/useModal';
 import { formatDateTimeRange } from '@/utils/date';
 
-import AiSummaryDialog from '../AiSummaryDialog';
+const AiSummaryDialog = lazy(() => import('../AiSummaryDialog'));
 
 interface TicleInfoCardProps {
   ticleId: number;
@@ -85,7 +85,9 @@ function TicleInfoCard({
           </Button>
         </div>
         {isOpen && (
-          <AiSummaryDialog onClose={onClose} isOpen={isOpen} ticleId={ticleId.toString()} />
+          <Suspense fallback={null}>
+            <AiSummaryDialog onClose={onClose} isOpen={isOpen} ticleId={ticleId.toString()} />
+          </Suspense>
         )}
       </div>
     </Link>

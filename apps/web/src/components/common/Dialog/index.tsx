@@ -1,7 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 import { ReactNode } from '@tanstack/react-router';
 import { cva } from 'class-variance-authority';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
+import { div as Div } from 'framer-motion/client';
 import { MouseEvent, useRef } from 'react';
 
 import CloseIc from '@/assets/icons/close.svg?react';
@@ -33,12 +34,12 @@ function DialogRoot({ isOpen, onClose, children, className }: DialogRootProps) {
     <Portal portalId="dialog">
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <Div
             className="fixed inset-0 flex h-full w-full items-center justify-center bg-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <motion.div
+            <Div
               ref={dialogRef}
               role="dialog"
               aria-modal="true"
@@ -48,8 +49,8 @@ function DialogRoot({ isOpen, onClose, children, className }: DialogRootProps) {
               onClick={handleInnerClick}
             >
               {children}
-            </motion.div>
-          </motion.div>
+            </Div>
+          </Div>
         )}
       </AnimatePresence>
     </Portal>

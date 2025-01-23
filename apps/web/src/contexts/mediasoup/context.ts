@@ -1,34 +1,36 @@
-import { types } from 'mediasoup-client';
 import { createContext, MutableRefObject, useContext } from 'react';
 import { Socket } from 'socket.io-client';
-import { client, MediaTypes } from '@repo/mediasoup';
+import { MediaType } from '@repo/mediasoup';
+import { CreateProducerRes } from '@repo/mediasoup/client';
+
+import type { Transport, Producer, Device, RtpCapabilities } from 'mediasoup-client/lib/types';
 
 export interface MediasoupState {
   isConnected: boolean;
   isError: Error | null;
   socketRef: MutableRefObject<Socket | null>;
-  deviceRef: MutableRefObject<client.Device | null>;
+  deviceRef: MutableRefObject<Device | null>;
   transportsRef: MutableRefObject<{
-    sendTransport: types.Transport | null;
-    recvTransport: types.Transport | null;
+    sendTransport: Transport | null;
+    recvTransport: Transport | null;
   }>;
   producersRef: MutableRefObject<{
-    audio: types.Producer | null;
-    video: types.Producer | null;
-    screen: types.Producer | null;
+    audio: Producer | null;
+    video: Producer | null;
+    screen: Producer | null;
   }>;
 }
 
 interface MediasoupActionContextProps {
   clearMediasoup: () => void;
-  createDevice: (rtpCapabilities: client.RtpCapabilities) => Promise<client.Device>;
-  createSendTransport: (device: client.Device) => Promise<void>;
-  createRecvTransport: (device: client.Device) => Promise<void>;
-  createProducer: (type: MediaTypes, track: MediaStreamTrack) => void;
-  closeProducer: (type: MediaTypes) => void;
-  pauseProducer: (type: MediaTypes) => void;
-  resumeProducer: (type: MediaTypes) => void;
-  connectExistProducer: () => Promise<client.CreateProducerRes[]>;
+  createDevice: (rtpCapabilities: RtpCapabilities) => Promise<Device>;
+  createSendTransport: (device: Device) => Promise<void>;
+  createRecvTransport: (device: Device) => Promise<void>;
+  createProducer: (type: MediaType, track: MediaStreamTrack) => void;
+  closeProducer: (type: MediaType) => void;
+  pauseProducer: (type: MediaType) => void;
+  resumeProducer: (type: MediaType) => void;
+  connectExistProducer: () => Promise<CreateProducerRes[]>;
 }
 
 export const MediasoupStateContext = createContext<MediasoupState | undefined>(undefined);

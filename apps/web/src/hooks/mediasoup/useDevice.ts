@@ -1,12 +1,13 @@
-import * as mediasoup from 'mediasoup-client';
+import { Device } from 'mediasoup-client/lib/Device';
 import { useRef } from 'react';
-import type { client } from '@repo/mediasoup';
+
+import type { RtpCapabilities } from 'mediasoup-client/lib/RtpParameters';
 
 const useDevice = () => {
-  const deviceRef = useRef<client.Device | null>(null);
+  const deviceRef = useRef<Device | null>(null);
 
-  const createDevice = async (rtpCapabilities: client.RtpCapabilities) => {
-    const device = new mediasoup.Device();
+  const createDevice = async (rtpCapabilities: RtpCapabilities) => {
+    const device = new Device();
 
     await device.load({ routerRtpCapabilities: rtpCapabilities });
     deviceRef.current = device;
