@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { MediaTypes } from '@repo/mediasoup';
+import { MediaType } from '@repo/mediasoup';
 
 import { useMediasoupAction } from '@/contexts/mediasoup/context';
 import { toast } from '@/core/toast';
@@ -90,7 +90,7 @@ const useLocalStream = () => {
       throw e;
     }
   };
-  const closeStream = (type: MediaTypes) => {
+  const closeStream = (type: MediaType) => {
     const [, setLocalStream] = getMediaState(type);
 
     closeProducer(type);
@@ -102,7 +102,7 @@ const useLocalStream = () => {
     });
   };
 
-  const pauseStream = (type: MediaTypes) => {
+  const pauseStream = (type: MediaType) => {
     const [localStream, setLocalStream] = getMediaState(type);
 
     const { stream } = localStream;
@@ -120,7 +120,7 @@ const useLocalStream = () => {
     });
   };
 
-  const resumeStream = (type: MediaTypes) => {
+  const resumeStream = (type: MediaType) => {
     const [localStream, setLocalStream] = getMediaState(type);
 
     const { stream } = localStream;

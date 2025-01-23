@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { client } from '@repo/mediasoup';
+import { RemoteStream } from '@repo/mediasoup/client';
 
 import { useLocalStreamState } from '@/contexts/localStream/context';
 import { useMediasoupState } from '@/contexts/mediasoup/context';
@@ -9,7 +9,7 @@ import useAuthStore from '@/stores/useAuthStore';
 
 interface PaginationParams {
   itemsPerPage: number;
-  pinnedStream?: client.RemoteStream;
+  pinnedStream?: RemoteStream;
 }
 
 const usePagination = ({ itemsPerPage, pinnedStream }: PaginationParams) => {
@@ -24,11 +24,11 @@ const usePagination = ({ itemsPerPage, pinnedStream }: PaginationParams) => {
 
   const [currentPage, setCurrentPage] = useState(0);
 
-  const prevPinStreamRef = useRef<client.RemoteStream>();
-  const prevGridItemsRef = useRef<client.RemoteStream[]>([]);
+  const prevPinStreamRef = useRef<RemoteStream>();
+  const prevGridItemsRef = useRef<RemoteStream[]>([]);
 
   const paginatedItems = useMemo(() => {
-    const totalItems: client.RemoteStream[] = [];
+    const totalItems: RemoteStream[] = [];
 
     totalItems.push({
       socketId: 'local',
@@ -83,7 +83,7 @@ const usePagination = ({ itemsPerPage, pinnedStream }: PaginationParams) => {
     );
 
     if (pinnedStream?.consumer && !isExistPinned) {
-      target.push(pinnedStream as client.RemoteStream);
+      target.push(pinnedStream as RemoteStream);
     }
 
     resumeVideoConsumers(target);
@@ -104,7 +104,7 @@ const usePagination = ({ itemsPerPage, pinnedStream }: PaginationParams) => {
       )
       .filter((item) => {
         return !paginatedItems.some((paginatedItem) => paginatedItem.socketId === item.socketId);
-      }) as client.RemoteStream[];
+      }) as RemoteStream[];
 
     pauseVideoConsumers(target);
   };
@@ -137,7 +137,7 @@ const usePagination = ({ itemsPerPage, pinnedStream }: PaginationParams) => {
 
     if (isExistPinned) return;
 
-    pauseVideoConsumers([prevPinnedStream as client.RemoteStream]);
+    pauseVideoConsumers([prevPinnedStream as RemoteStream]);
   }, [pinnedStream?.consumer?.id]);
 
   return {

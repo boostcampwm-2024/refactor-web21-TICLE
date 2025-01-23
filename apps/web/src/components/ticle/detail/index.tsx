@@ -1,16 +1,18 @@
 import { useParams } from '@tanstack/react-router';
+import { lazy, Suspense } from 'react';
 
 import CalendarIc from '@/assets/icons/calendar.svg?react';
 import ClockIc from '@/assets/icons/clock.svg?react';
 import Avatar from '@/components/common/Avatar';
 import Badge from '@/components/common/Badge';
-import UserProfileDialog from '@/components/user/UserProfileDialog';
 import { useApplyTicle, useDeleteTicle, useTicle } from '@/hooks/api/ticle';
 import useModal from '@/hooks/useModal';
 import useAuthStore from '@/stores/useAuthStore';
 import { formatDateTimeRange } from '@/utils/date';
 
 import CtaButton from './CtaButton';
+
+const UserProfileDialog = lazy(() => import('@/components/user/UserProfileDialog'));
 
 function Detail() {
   const { ticleId } = useParams({ from: '/ticle/$ticleId' });
@@ -73,12 +75,14 @@ function Detail() {
               <span className="text-title2 text-main">{data.speakerName}</span>
             </div>
             {isOpen && (
-              <UserProfileDialog
-                isOpen={isOpen}
-                onClose={onClose}
-                speakerId={data.speakerId}
-                nickname={data.speakerName}
-              />
+              <Suspense fallback={null}>
+                <UserProfileDialog
+                  isOpen={isOpen}
+                  onClose={onClose}
+                  speakerId={data.speakerId}
+                  nickname={data.speakerName}
+                />
+              </Suspense>
             )}
             <div className="w-full rounded-lg bg-teritary p-4 text-body2 text-main">
               {data.speakerIntroduce}

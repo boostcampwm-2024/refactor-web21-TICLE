@@ -1,4 +1,4 @@
-import { client } from '@repo/mediasoup';
+import { RemoteStream } from '@repo/mediasoup/client';
 
 import { useLocalStreamState } from '@/contexts/localStream/context';
 import { useRemoteStreamState } from '@/contexts/remoteStream/context';
@@ -7,7 +7,7 @@ function useAudioState() {
   const { audio, screen } = useLocalStreamState();
   const { audioStreams } = useRemoteStreamState();
 
-  const getAudioMutedState = (targetStream: client.RemoteStream) => {
+  const getAudioMutedState = (targetStream: RemoteStream) => {
     if (targetStream.stream?.id === screen.stream?.id) {
       return false;
     }

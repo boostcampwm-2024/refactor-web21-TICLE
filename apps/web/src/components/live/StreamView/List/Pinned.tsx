@@ -1,4 +1,4 @@
-import { client } from '@repo/mediasoup';
+import { RemoteStream } from '@repo/mediasoup/client';
 
 import PaginationControls from '@/components/live/StreamView/List/PaginationControls';
 import SubVideoGrid from '@/components/live/StreamView/List/SubVideoGrid';
@@ -9,11 +9,11 @@ import usePagination from '@/hooks/usePagination';
 const ITEMS_PER_SUB_GRID = 4;
 
 interface PinnedListProps {
-  pinnedVideoStreamData: client.RemoteStream;
+  pinnedVideoStreamData: RemoteStream;
 
-  addPinnedVideo: (stream: client.RemoteStream) => void;
+  addPinnedVideo: (stream: RemoteStream) => void;
   removePinnedVideo: () => void;
-  getAudioMutedState: (stream: client.RemoteStream) => boolean;
+  getAudioMutedState: (stream: RemoteStream) => boolean;
 }
 
 function PinnedGrid({
@@ -39,7 +39,7 @@ function PinnedGrid({
           <VideoPlayer
             stream={pinnedVideoStreamData.stream}
             paused={pinnedVideoStreamData.paused}
-            mediaType={pinnedVideoStreamData.consumer?.appData?.mediaTypes}
+            mediaType={pinnedVideoStreamData.consumer?.appData?.mediaType}
             isMicOn={getAudioMutedState(pinnedVideoStreamData)}
             nickname={pinnedVideoStreamData.nickname}
           />

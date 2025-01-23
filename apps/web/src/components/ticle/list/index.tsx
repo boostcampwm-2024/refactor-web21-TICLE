@@ -70,7 +70,7 @@ function TicleList() {
   });
 
   return (
-    <div className="mt-20 flex w-[80rem] flex-col gap-12 justify-self-center">
+    <div className="mx-auto mt-20 flex w-[80rem] flex-col justify-center gap-12">
       <div className="flex w-full justify-between">
         <Tab tabItems={TICLE_LIST_TAB_DATA} selectedTab={selectedTab} />
         <Select options={SORT_OPTIONS} selectedOption={sortOption} onChange={handleOptionChange} />
