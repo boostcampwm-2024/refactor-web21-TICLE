@@ -172,7 +172,7 @@ export class TicleService {
     const orderDirection = isOldest ? 'ASC' : 'DESC';
     const statuses = isOpen
       ? `'${TicleStatus.OPEN}', '${TicleStatus.IN_PROGRESS}'`
-      : TicleStatus.CLOSED;
+      : `'${TicleStatus.CLOSED}'`;
 
     console.log(lastSeenCreatedAt);
 
@@ -203,7 +203,7 @@ export class TicleService {
         limited_ticles.profile_image_url AS ticle_profile_image_url,
         GROUP_CONCAT(DISTINCT tags.name) AS tagNames,
         COUNT(DISTINCT applicant.id) AS applicantCount,
-        speaker.profile_image_url AS speaker_profile_image_url
+        speaker.profile_image_url AS speaker_profile_image_url 
     FROM (
         SELECT *
         FROM ticle
