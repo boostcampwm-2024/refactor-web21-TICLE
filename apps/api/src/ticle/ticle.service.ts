@@ -241,7 +241,7 @@ export class TicleService {
       speakerName: ticle.ticle_speaker_name,
       applicantsCount: ticle.applicantCount,
       createdAt: ticle.ticle_created_at,
-      speakerProfileImageUrl: ticle.profile_image_url,
+      speakerProfileImageUrl: ticle.speaker_profile_image_url,
     }));
 
     const totalPages = Math.ceil(totalTicleCount.count / pageSize);
