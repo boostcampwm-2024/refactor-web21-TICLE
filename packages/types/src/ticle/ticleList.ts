@@ -13,7 +13,7 @@ const TicleSchema = z.object({
 });
 
 const MetaSchema = z.object({
-  page: z.number(),
+  // page: z.number(),
   take: z.number(),
   totalItems: z.number(),
   totalPages: z.number(),
